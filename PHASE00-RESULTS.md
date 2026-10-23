@@ -8,7 +8,7 @@ Public landing page, reusable public/auth/personal/institution layout foundation
 
 ## Dependencies
 
-- Laravel Boost 2.10.3 (development), required by repository bootstrap instructions. Installer generated updated AGENTS.md, CLAUDE.md, Cursor guidelines and boost.json.
+- Laravel Boost 2.10.3 (development), required by repository bootstrap instructions. Installer generated updated AGENTS.md, CLAUDE.md and boost.json.
 - Livewire 4.4.8, compatible version resolved by Composer; layout hooks prepared for later reactive features.
 - @fontsource/montserrat 5.3.0, local/offline font assets.
 - @playwright/test 1.64.1 (development), repeatable installed-Chrome checks.
