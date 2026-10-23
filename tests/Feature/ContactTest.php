@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Mail\ContactEnquiryMail;
 use App\Models\Enquiry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -17,11 +18,12 @@ class ContactTest extends TestCase
         return ['name' => 'Test Student', 'email' => 'student@example.test', 'category' => 'student', 'subject' => 'A product question', 'message' => 'I would like to learn more about the planned student workspace.', 'consent' => '1', 'website' => ''];
     }
 
-    public function test_enquiries_are_encrypted_stored_and_truthfully_acknowledged_without_email(): void
+    public function test_enquiries_are_encrypted_stored_and_mail_is_prepared_truthfully(): void
     {
         Mail::fake();
+        config(['mail.default' => 'log']);
         $this->post('/contact', $this->enquiry())->assertRedirectToRoute('contact')
-            ->assertSessionHas('status', fn ($message) => str_contains($message, 'No email has been sent.'));
+            ->assertSessionHas('status', fn ($message) => str_contains($message, 'local development log only'));
         $this->assertDatabaseCount('enquiries', 1);
         $enquiry = Enquiry::sole();
         $this->assertSame('student@example.test', $enquiry->email);
@@ -31,7 +33,8 @@ class ContactTest extends TestCase
         $this->assertStringNotContainsString('student@example.test', $raw->email);
         $this->assertNotSame($enquiry->message, $raw->message);
         $this->assertArrayNotHasKey('message', $enquiry->toArray());
-        Mail::assertNothingSent();
+        $this->assertSame('logged', $enquiry->mail_status);
+        Mail::assertSent(ContactEnquiryMail::class);
     }
 
     public function test_contact_validation_and_spam_protection_reject_invalid_submissions(): void

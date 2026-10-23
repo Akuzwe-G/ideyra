@@ -1,0 +1,18 @@
+@props(['id' => 'feature-showcase'])
+@php
+$features = [
+    ['idea', 'Idea Vault', 'A little room for a big “what if”.', 'Capture the question. Keep the context. Let your idea develop before deciding where it goes.', 'PRIVATE IDEA / SAMPLE', 'A more connected campus', ['Question: how could students find project partners?', 'Context: different skills, shared interests', 'Next thought: start with a small pilot']],
+    ['project', 'Project Studio', 'From a possibility to a practical direction.', 'A planned space for milestones, tasks and deliverables that connect everyday progress to a bigger purpose.', 'PROJECT OUTLINE / SAMPLE', 'Turn the idea into a first pilot', ['Define the problem → outlined', 'Agree on a first milestone → in focus', 'Reflect on what you learn → next']],
+    ['team', 'Collaboration', 'Good work grows through shared effort.', 'Invite people deliberately. Make roles clear. Build together without opening your private workspace to everyone.', 'PROJECT GROUP / SAMPLE', 'A shared effort, clear responsibilities', ['You / Shape the problem', 'Project partner / Explore a solution', 'Supervisor / Offer guidance']],
+    ['opportunity', 'Opportunities Hub', 'Keep your next possibility in view.', 'Discover future opportunities and keep application progress close to the skills and interests you are developing.', 'OPPORTUNITY TRACKER / SAMPLE', 'A next step worth exploring', ['Hackathon / Explore the challenge', 'Internship / Review the requirements', 'Scholarship / Prepare an application']],
+    ['cv', 'CV Builder', 'Give your experience a clear voice.', 'Future CV tools will help you organise skills, project experience and achievements into a document you choose to share.', 'CV OUTLINE / SAMPLE', 'A story built from experience', ['Profile / What you want to contribute', 'Project experience / What you built', 'Skills / What you learned along the way']],
+    ['portfolio', 'Portfolio', 'Choose the work you want the world to see.', 'A planned publishing flow for selected projects and achievements. Private drafts stay private until you explicitly publish.', 'PORTFOLIO OUTLINE / SAMPLE', 'Your work, thoughtfully presented', ['The challenge / Why it mattered', 'The work / How you approached it', 'The reflection / What changed']]
+];
+@endphp
+<section class="section container showcase-section" data-showcase>
+<x-marketing.heading eyebrow="EXPLORE THE VISION" title="Different tools. One connected story.">Select a feature to explore its purpose. These interactive illustrations describe planned tools; they do not save or publish data.</x-marketing.heading>
+<div class="showcase-layout"><nav class="feature-picker" aria-label="Explore planned features">@foreach($features as [$key, $name])<a id="{{ $id }}-tab-{{ $key }}" href="#{{ $id }}-{{ $key }}" data-feature-tab="{{ $key }}"><span>{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>{{ $name }}<span aria-hidden="true">↗</span></a>@endforeach</nav>
+<div class="feature-panels">@foreach($features as [$key, $name, $title, $copy, $label, $sampleTitle, $rows])
+<article id="{{ $id }}-{{ $key }}" class="feature-panel" data-feature-panel="{{ $key }}"><div class="feature-panel-copy"><x-ui.badge>Planned · Illustrative preview</x-ui.badge><h3>{{ $title }}</h3><p>{{ $copy }}</p></div><div class="feature-sample sample-{{ $key }}"><div class="sample-window"><span aria-hidden="true">● ● ●</span><span>{{ $label }}</span></div><div class="sample-body"><p class="sample-module">{{ $name }}</p><h4>{{ $sampleTitle }}</h4><ul>@foreach($rows as $row)<li><span class="sample-bullet" aria-hidden="true"></span>{{ $row }}</li>@endforeach</ul><p class="sample-footnote">Example content only · feature in development</p></div></div></article>
+@endforeach</div></div>
+</section>

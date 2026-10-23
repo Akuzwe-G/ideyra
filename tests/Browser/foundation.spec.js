@@ -5,7 +5,7 @@ test('public and foundation layouts render at desktop tablet and mobile sizes', 
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
-    for (const width of [1440, 768, 390]) {
+    for (const width of [1440, 768, 390, 360]) {
         await page.setViewportSize({ width, height: 960 });
         for (const path of ['/', '/about', '/features', '/for-students', '/for-institutions', '/contact', '/login', '/register', '/preview/auth', '/preview/personal', '/preview/institution', '/preview/components']) {
             await page.goto(path);
@@ -85,7 +85,7 @@ test('registration login logout and contact submission work with real CSRF prote
     await page.getByLabel('Message', { exact: true }).fill('This is a browser test enquiry in an isolated SQLite database.');
     await page.getByLabel('I agree that my name').check();
     await page.getByRole('button', { name: 'Submit enquiry' }).click();
-    await expect(page.getByRole('status').filter({ hasText: 'No email has been sent.' })).toBeVisible();
+    await expect(page.getByRole('status').filter({ hasText: 'Email delivery was simulated' })).toBeVisible();
     const rejected = await request.post('/contact', { form: { name: 'Missing CSRF' } });
     expect(rejected.status()).toBe(419);
 });

@@ -1,4 +1,9 @@
 const menuToggle = document.querySelector('[data-menu-toggle]');
+if (document.querySelector('.marketing-header')) {
+    import('./experience.js').then(module => module.startExperience()).catch(() => {
+        // All content and links remain usable when enhancements are unavailable.
+    });
+}
 const publicNavigation = document.querySelector('#public-navigation');
 if (menuToggle && publicNavigation) {
     menuToggle.hidden = false;
