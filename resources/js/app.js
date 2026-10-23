@@ -1,4 +1,7 @@
 const menuToggle = document.querySelector('[data-menu-toggle]');
+if (document.querySelector('[data-application-wizard]')) {
+    import('./application-wizard.js').catch(() => {});
+}
 if (document.querySelector('.marketing-header')) {
     import('./experience.js').then(module => module.startExperience()).catch(() => {
         // All content and links remain usable when enhancements are unavailable.

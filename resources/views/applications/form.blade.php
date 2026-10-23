@@ -1,0 +1,22 @@
+<x-layouts.public :title="$type === 'institution' ? 'Institution Application' : 'Student Recommendation'" description="Submit an institution application or a student recommendation to Ideyra.">
+<x-marketing.intro eyebrow="APPLY TO JOIN IDEYRA" :title="$type === 'institution' ? 'Tell us about your institution.' : 'A recommendation can start a conversation.'">We need your contact details to review this application and discuss next steps. Do not send identity documents, transcripts or sensitive student records. {{ $type === 'student' ? 'This recommendation does not bind your institution or create an account.' : 'Submission does not create or activate an institution.' }}</x-marketing.intro>
+<section class="container section-topless application-container"><x-form-errors /><form method="POST" action="{{ route('apply.store', $type) }}" data-application-wizard>@csrf
+<input type="hidden" name="submission_key" value="{{ session('application_nonce.'.$type) }}">
+<div class="wizard-progress" data-wizard-progress role="status">Complete the sections, review your answers, then submit.</div>
+@foreach($sections as $heading => $fields)<fieldset class="card application-step" data-wizard-step><legend>{{ $loop->iteration }}. {{ $heading }}</legend><div class="form-grid">
+@foreach($fields as $name => [$label, $kind, $requirement])
+@php $conditional = str_starts_with($requirement, 'required_if:') ? explode(',', substr($requirement, 12)) : null; @endphp
+<div class="{{ $kind === 'textarea' || $kind === 'checkboxes' ? 'form-full' : '' }}" @if($conditional) data-condition-field="{{ $conditional[0] }}" data-condition-value="{{ $conditional[1] }}" @endif>
+@if($kind === 'select')
+<x-ui.select :name="$name" :label="$label" :options="array_combine($fields[$name][3], array_map(fn($value) => ucfirst(str_replace('_', ' ', $value)), $fields[$name][3]))" :required="$requirement === 'required'" />
+@elseif($kind === 'checkboxes')
+<fieldset class="field checkbox-group" data-required-choices><legend>{{ $label }}</legend>@foreach($fields[$name][3] as $value)<label><input type="checkbox" name="{{ $name }}[]" value="{{ $value }}" @checked(in_array($value, (array) old($name, [])))> {{ ucfirst(str_replace('_', ' ', $value)) }}</label>@endforeach @error($name)<p class="field-error">{{ $message }}</p>@enderror</fieldset>
+@elseif($kind === 'textarea')
+<div class="field"><label for="{{ $name }}">{{ $label }}</label><textarea id="{{ $name }}" name="{{ $name }}" rows="4" maxlength="2000" @if($requirement === 'required') required @endif @error($name) aria-invalid="true" @enderror>{{ old($name) }}</textarea>@error($name)<p class="field-error">{{ $message }}</p>@enderror</div>
+@else
+<x-ui.input :name="$name" :label="$label" :type="$kind === 'year' ? 'number' : $kind" :value="old($name)" :error="$errors->first($name)" :required="$requirement === 'required'" :maxlength="$kind === 'number' || $kind === 'year' ? null : 255" :min="$kind === 'year' ? 1900 : ($kind === 'number' ? 0 : null)" :max="$kind === 'year' ? 2200 : ($kind === 'number' ? 10000000 : null)" />
+@endif</div>
+@endforeach</div></fieldset>@endforeach
+<fieldset class="card application-step" data-wizard-step><legend>Review and consent</legend><p>Your application will be stored securely and reviewed by authorised System Administrators. Contact information is used for application follow-up. No account or institution is created automatically. Only authorised reviewers can access the application. Contact us if you have questions about these details or need verified receipt assistance.</p><div data-wizard-review></div><label class="consent"><input type="checkbox" name="review_confirmed" value="1" required @checked(old('review_confirmed'))><span>I have reviewed the information and confirm it is accurate to the best of my knowledge.</span></label><label class="consent"><input type="checkbox" name="consent" value="1" required @checked(old('consent'))><span>I agree to the secure storage and review of these details and being contacted about this application.</span></label><div class="honeypot" aria-hidden="true"><label>Leave blank<input name="website_trap" tabindex="-1" autocomplete="off"></label></div><x-ui.button type="submit">Submit application ↗</x-ui.button></fieldset>
+<div class="wizard-controls" data-wizard-controls hidden><x-ui.button variant="secondary" data-wizard-back>Back</x-ui.button><x-ui.button data-wizard-next>Continue →</x-ui.button></div><p data-wizard-feedback role="status" class="form-note"></p>
+</form></section></x-layouts.public>

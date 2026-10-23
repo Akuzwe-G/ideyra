@@ -4,31 +4,18 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_registration_hashes_password_and_creates_authenticated_session(): void
+    public function test_public_registration_is_disabled_and_get_started_is_an_application(): void
     {
-        $response = $this->post('/register', ['name' => 'Test Student', 'email' => 'Student@Example.test', 'password' => 'StrongPassword123', 'password_confirmation' => 'StrongPassword123']);
-        $response->assertRedirectToRoute('dashboard');
-        $user = User::sole();
-        $this->assertSame('student@example.test', $user->email);
-        $this->assertTrue(Hash::check('StrongPassword123', $user->password));
-        $this->assertAuthenticatedAs($user);
-        $this->get('/dashboard')->assertOk()->assertSee('Test Student')->assertHeader('X-Robots-Tag', 'noindex, nofollow');
-    }
-
-    public function test_registration_validates_duplicates_weak_passwords_and_confirmation(): void
-    {
-        $user = User::factory()->create();
-        $this->post('/register', ['name' => '', 'email' => $user->email, 'password' => 'short', 'password_confirmation' => 'different'])
-            ->assertSessionHasErrors(['name', 'email', 'password']);
-        $this->assertDatabaseCount('users', 1);
-        $this->assertGuest();
+        $this->get('/register')->assertNotFound();
+        $this->post('/register', ['name' => 'Attempt', 'email' => 'new@example.test', 'password' => 'StrongPassword123'])->assertNotFound();
+        $this->assertDatabaseCount('users', 0);
+        $this->get('/')->assertOk()->assertSee(route('apply'))->assertDontSee('/register');
     }
 
     public function test_login_logout_and_guest_auth_boundaries(): void
@@ -40,7 +27,6 @@ class AuthenticationTest extends TestCase
         $this->post('/login', ['email' => $user->email, 'password' => 'StrongPassword123'])->assertRedirectToRoute('dashboard');
         $this->assertAuthenticatedAs($user);
         $this->get('/login')->assertRedirectToRoute('dashboard');
-        $this->get('/register')->assertRedirectToRoute('dashboard');
         $this->post('/logout')->assertRedirectToRoute('home');
         $this->assertGuest();
         $this->get('/dashboard')->assertRedirectToRoute('login');
@@ -56,23 +42,23 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
-    public function test_invalid_email_types_return_validation_errors_instead_of_server_errors(): void
+    public function test_invalid_email_types_return_validation_errors(): void
     {
         $this->post('/login', ['email' => ['bad'], 'password' => 'anything'])->assertSessionHasErrors('email');
     }
 
-    public function test_registration_is_rate_limited(): void
+    public function test_pending_or_suspended_accounts_cannot_log_in(): void
     {
-        for ($attempt = 0; $attempt < 5; $attempt++) {
-            $this->post('/register', [])->assertSessionHasErrors();
+        foreach (['pending', 'suspended'] as $status) {
+            $user = User::factory()->create(['status' => $status, 'password' => 'StrongPassword123']);
+            $this->post('/login', ['email' => $user->email, 'password' => 'StrongPassword123'])->assertSessionHasErrors('email');
+            $this->assertGuest();
         }
-        $this->post('/register', [])->assertStatus(429);
     }
 
     public function test_private_account_response_cannot_be_cached(): void
     {
-        $this->actingAs(User::factory()->create());
-        $response = $this->get('/dashboard')->assertOk();
+        $response = $this->actingAs(User::factory()->create())->get('/dashboard')->assertOk();
         $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
     }
 }

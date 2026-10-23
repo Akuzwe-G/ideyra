@@ -1,0 +1,306 @@
+.admin-footer
+{
+    padding:1.5rem 2rem;
+    font-size:.65rem;
+    color:var(--muted);
+    border-top:1px solid var(--line)
+}
+.admin-sidebar
+{
+    overflow-wrap:anywhere
+}
+.admin-sidebar nav [aria-current]
+{
+    background:var(--canvas);
+    color:var(--action);
+    font-weight:600
+}
+.workspace-content>.card,.workspace-content>.alert,.workspace-content>.component-grid
+{
+    margin-top:1.5rem
+}
+.workspace-content>.page-heading
+{
+    margin-bottom:1rem
+}
+.card>.button,.card>form>.button
+{
+    margin-top:1rem
+}
+.card>h2
+{
+    margin-bottom:1rem
+}
+.card>p
+{
+    font-size:.8rem;
+    margin-block:1rem
+}
+.card fieldset
+{
+    border:1px solid var(--line);
+    padding:1rem;
+    margin-block:1rem;
+    border-radius:8px
+}
+.card legend,.application-step legend
+{
+    font-size:.9rem;
+    font-weight:600;
+    padding:.3rem .5rem
+}
+.permission-grid
+{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:.7rem;
+    font-size:.7rem
+}
+.permission-grid label,.checkbox-group label
+{
+    display:flex;
+    align-items:start;
+    gap:.6rem;
+    overflow-wrap:anywhere
+}
+.permission-grid input,.checkbox-group input
+{
+    width:auto;
+    min-height:20px;
+    flex-shrink:0;
+    accent-color:var(--action)
+}
+.filter-grid
+{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:1rem;
+    align-items:end
+}
+.inline-search
+{
+    display:flex;
+    gap:.7rem;
+    flex-wrap:wrap;
+    align-items:center;
+    margin-block:1rem
+}
+.inline-search input
+{
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:.7rem;
+    background:var(--surface);
+    max-width:100%
+}
+.details-list dt
+{
+    font-size:.75rem;
+    font-weight:600;
+    margin-top:1rem
+}
+.details-list dd
+{
+    font-size:.8rem;
+    color:var(--muted);
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+    margin:.4rem 0 1rem
+}
+.institution-logo
+{
+    max-width:180px;
+    max-height:120px;
+    object-fit:contain;
+    margin-top:2rem
+}
+.application-container
+{
+    max-width:900px
+}
+.application-step
+{
+    margin-bottom:1.5rem
+}
+.application-step>p
+{
+    font-size:.8rem
+}
+.application-step legend
+{
+    font-size:1.1rem
+}
+.application-step .form-full
+{
+    grid-column:1/-1
+}
+.checkbox-group
+{
+    padding:1rem;
+    border:1px solid var(--line);
+    border-radius:8px
+}
+.checkbox-group label
+{
+    font-size:.8rem;
+    font-weight:400
+}
+.wizard-progress
+{
+    font-size:.8rem;
+    background:var(--canvas);
+    padding:1rem;
+    border-radius:8px;
+    margin-bottom:1.5rem
+}
+.wizard-controls
+{
+    display:flex;
+    gap:1rem;
+    justify-content:space-between
+}
+.wizard-controls button
+{
+    min-width:100px
+}
+.receipt-reference
+{
+    font-size:1.2rem;
+    font-weight:600;
+    letter-spacing:.04em;
+    color:var(--action);
+    margin:1.5rem 0
+}
+.application-container>h1
+{
+    font-size:2rem;
+    font-weight:600;
+    margin-bottom:1.5rem
+}
+.application-container>p
+{
+    margin-bottom:1.2rem
+}
+.application-container>.button
+{
+    margin-block:1rem
+}
+pre
+{
+    font-size:.6rem;
+    max-width:400px;
+    white-space:pre-wrap;
+    overflow-wrap:anywhere
+}
+table a
+{
+    color:var(--action);
+    text-decoration:underline;
+    text-underline-offset:3px
+}
+table select
+{
+    max-width:140px;
+    padding:.5rem;
+    border:1px solid var(--line);
+    border-radius:6px
+}
+input,select,textarea
+{
+    max-width:100%
+}
+.workspace-content form,.workspace-content fieldset
+{
+    min-width:0;
+    min-inline-size:0;
+    max-width:100%
+}
+.workspace-content .table-scroll
+{
+    width:100%;
+    max-width:100%
+}
+.workspace-content>p
+{
+    overflow-wrap:anywhere
+}
+.application-step
+{
+    min-width:0;
+    min-inline-size:0;
+    max-width:100%
+}
+.application-step legend
+{
+    max-width:100%;
+    white-space:normal
+}
+@media(max-width:900px)
+{
+    .admin-sidebar nav
+    {
+        flex-wrap:wrap;
+        overflow:visible
+    }
+    .admin-sidebar .nav-item
+    {
+        font-size:.65rem
+    }
+    .filter-grid
+    {
+        grid-template-columns:1fr 1fr
+    }
+    .workspace-content
+    {
+        padding:1.5rem
+    }
+    .admin-sidebar>.brand:not(.brand-compact)
+    {
+        display:inline-flex
+    }
+}
+@media(max-width:560px)
+{
+    .permission-grid,.filter-grid
+    {
+        grid-template-columns:1fr
+    }
+    .application-step
+    {
+        padding:1rem
+    }
+    .application-container .form-grid
+    {
+        grid-template-columns:1fr
+    }
+    .admin-footer
+    {
+        padding:1.5rem
+    }
+    .workspace-header .button
+    {
+        min-height:40px;
+        padding:.5rem .8rem
+    }
+    .workspace-content .card
+    {
+        padding:1rem
+    }
+    .workspace-header>span
+    {
+        max-width:190px
+    }
+    .admin-sidebar nav
+    {
+        gap:.2rem
+    }
+    .workspace-content .page-heading h1
+    {
+        overflow-wrap:anywhere;
+        font-size:1.6rem
+    }
+    .application-container>h1
+    {
+        font-size:1.7rem
+    }
+}

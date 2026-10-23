@@ -1,5 +1,5 @@
 @if($layout === 'auth')
-<x-layouts.auth><div class="auth-panel"><x-ui.badge>Foundation · Layout preview</x-ui.badge><h1>Welcome to your next chapter.</h1><p>A focused space for account access.</p><x-ui.alert>This is a layout reference. Registration and login are now available; password recovery is planned.</x-ui.alert><x-ui.button :href="route('login')" variant="secondary">Go to Log In</x-ui.button></div></x-layouts.auth>
+<x-layouts.auth><div class="auth-panel"><x-ui.badge>Foundation · Layout preview</x-ui.badge><h1>Welcome to your next chapter.</h1><p>A focused space for account access.</p><x-ui.alert>This is a layout reference. Accounts are issued by authorised administrators. Login and password reset are available.</x-ui.alert><x-ui.button :href="route('login')" variant="secondary">Go to Log In</x-ui.button></div></x-layouts.auth>
 @else
 <x-layouts.workspace :institution="$layout === 'institution'">
 <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="{{ route('home') }}">Ideyra</a><span aria-hidden="true">/</span><span aria-current="page">Foundation preview</span></nav>

@@ -5,6 +5,7 @@ return [
     'tagline' => 'Imagine. Build. Achieve.',
     'version' => '1.0.0',
     'contact_email' => env('IDEYRA_CONTACT_EMAIL', 'akuzwe0@gmail.com'),
+    'application_email' => env('IDEYRA_APPLICATION_EMAIL', 'akuzwe0@gmail.com'),
     'copyright_year' => 2026,
     'brand' => [
         'navy' => '#132447', 'blue' => '#3759D7', 'teal' => '#16B8C6',

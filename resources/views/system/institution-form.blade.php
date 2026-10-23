@@ -1,0 +1,20 @@
+<x-layouts.admin :title="$institution->exists ? 'Institution profile' : 'Create institution'" :institution="$institution->exists ? $institution : null">
+@php $system = \App\Support\InstitutionAccess::system(); $source = $application?->payload ?? []; $fields = ['name' => 'Institution name', 'region' => 'Region / province / district', 'city' => 'City or town', 'address' => 'Physical address', 'website' => 'Website (optional)', 'contact_email' => 'Contact email', 'contact_phone' => 'Contact phone (optional)', 'student_population' => 'Estimated student population']; @endphp
+<x-ui.card>@if($application)<x-ui.alert>Onboarding {{ $application->reference }}. Creation produces a draft institution, not automatic activation.</x-ui.alert>@endif
+<form enctype="multipart/form-data" method="POST" action="{{ $institution->exists ? route('institutions.update', $institution) : route('institutions.store') }}">@csrf @if($institution->exists) @method('PUT') @endif
+@if($application)<input type="hidden" name="application_uuid" value="{{ $application->uuid }}">@endif
+<div class="form-grid">@foreach($fields as $name => $label)
+@if(! $system && in_array($name, $institution->locked_fields ?? []))<div class="field"><span>{{ $label }} (locked by System Administrator)</span><strong>{{ $institution->$name }}</strong></div>
+@else
+<x-ui.input :name="$name" :label="$label" :type="$name === 'student_population' ? 'number' : ($name === 'contact_email' ? 'email' : ($name === 'website' ? 'url' : 'text'))" :value="old($name, $institution->$name ?? ($source[match($name) {'name'=>'institution_name','contact_email'=>'email','contact_phone'=>'phone','address'=>'campus',default=>$name}] ?? ''))" :error="$errors->first($name)" :required="in_array($name, ['name','region','city','contact_email','student_population'])" :min="$name === 'student_population' ? 0 : null" />
+@endif
+@endforeach
+@if($system)<x-ui.input name="slug" label="Unique institution slug" :value="old('slug', $institution->slug)" required maxlength="100" /><x-ui.input name="country" label="Country" :value="old('country', $institution->country ?? ($source['country'] ?? ''))" required /><x-ui.select name="type" label="Institution type" :options="['university'=>'University','college'=>'College','school'=>'School','technical'=>'Technical institution','other'=>'Other']" :selected="$institution->type ?? ($source['institution_type'] ?? '')" />@endif
+<div class="field"><label for="logo">Institution logo (PNG, JPEG or WebP; max 2 MB)</label><input id="logo" name="logo" type="file" accept="image/png,image/jpeg,image/webp"></div></div>
+@if($system)<fieldset class="permission-grid"><legend>Profile fields locked against institutional edits</legend>@foreach(array_keys($fields) as $key)<label><input type="checkbox" name="locked_fields[]" value="{{ $key }}" @checked(in_array($key, $institution->locked_fields ?? []))> {{ $fields[$key] }}</label>@endforeach</fieldset>@endif
+<x-ui.button type="submit">Save institution profile</x-ui.button></form></x-ui.card>
+@if($institution->exists)
+@if($system)<x-ui.card><h2>Controlled activation</h2><p>Current status: {{ $institution->status }}. Identifier: {{ $institution->identifier }}. Activation requires an accepted active Institution Administrator.</p><form method="POST" action="{{ route('institutions.status', $institution) }}">@csrf<x-ui.select name="status" label="Institution status" :options="['draft'=>'Draft','pending_activation'=>'Pending activation','active'=>'Active','suspended'=>'Suspended','archived'=>'Archived']" :selected="$institution->status" /><x-ui.button type="submit">Confirm status change</x-ui.button></form><p><a href="{{ route('members.index', $institution) }}">Create or appoint an Institution Administrator →</a></p></x-ui.card>@endif
+@if($institution->logo_path)<img class="institution-logo" src="{{ route('institutions.logo', $institution) }}" alt="{{ $institution->name }} logo">@endif
+@endif
+</x-layouts.admin>

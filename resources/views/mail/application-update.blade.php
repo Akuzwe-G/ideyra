@@ -1,0 +1,1 @@
+<h1>{{ config('ideyra.name') }} application update</h1><p>{{ $application->reference }} / {{ str_replace('_',' ',$application->status) }}</p><p style="white-space:pre-wrap">{{ $publicMessage }}</p><p>This update does not create an account or activate an institution.</p>

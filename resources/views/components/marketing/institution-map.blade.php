@@ -1,4 +1,4 @@
-<section class="container section institution-map-section"><x-marketing.heading eyebrow="CONNECTED BY CONTEXT" title="The right structure. The right boundaries.">A conceptual view of the planned institutional environment. Membership and permission features are not yet implemented.</x-marketing.heading><div class="institution-map">
+<section class="container section institution-map-section"><x-marketing.heading eyebrow="CONNECTED BY CONTEXT" title="The right structure. The right boundaries.">Institution-scoped membership, permissions and academic administration are implemented. Project collaboration tools remain planned.</x-marketing.heading><div class="institution-map">
 @foreach([
 ['Institution', 'One explicit organisational context', '01'],
 ['Programmes & intakes', 'The academic structure within that institution', '02'],

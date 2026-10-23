@@ -11,5 +11,5 @@
 ] as [$title, $copy])<li><span class="journey-index">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span><div><h2>{{ $title }}</h2><p>{{ $copy }}</p><x-ui.badge>Planned</x-ui.badge></div></li>@endforeach
 </ol></section>
 <section class="institution-section"><div class="container dual-use"><div><p class="eyebrow">ON YOUR OWN TERMS</p><h2>Independent work<br>stays yours.</h2><p>Your personal workspace will be independent of any institution. Personal content will be private by default, and sharing will require an explicit decision.</p></div><div><p class="eyebrow">PART OF SOMETHING BIGGER</p><h2>One person.<br>More than one community.</h2><p>The architecture is designed for participation in multiple institutions. Academic projects will have their own membership and access boundaries, without opening your personal work to everyone.</p></div></div></section>
-<x-marketing.cta title="Begin with possibility.">Create your account now. The student workspace tools described here are still in development.</x-marketing.cta>
+<x-marketing.cta title="Begin with possibility.">Recommend Ideyra to your institution. The student workspace tools described here are still in development.</x-marketing.cta>
 </x-layouts.public>

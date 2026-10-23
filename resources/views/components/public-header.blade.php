@@ -11,7 +11,7 @@
                 <a class="button button-small" href="{{ route('dashboard') }}">Your account ↗</a>
             @else
                 <a href="{{ route('login') }}">Log In</a>
-                <a class="button button-small" href="{{ route('register') }}">Get Started ↗</a>
+                <a class="button button-small" href="{{ route('apply') }}">Get Started ↗</a>
             @endauth
         </div>
     </nav>

@@ -13,9 +13,9 @@ class FoundationTest extends TestCase
             ->assertSee('Imagine.')->assertSee('Build.')->assertSee('Achieve.')
             ->assertSee('v'.config('ideyra.version'))
             ->assertSee('Get Started')
-            ->assertSee('Workspace tools are in development')
+            ->assertSee('Institution-led access')
             ->assertSee('ideyra-wordmark.png')
-            ->assertSee(route('register'))
+            ->assertSee(route('apply'))
             ->assertSee(route('login'));
     }
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ActiveAccount;
 use App\Http\Middleware\PrivateResponse;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,9 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->web(append: [PrivateResponse::class]);
+        $middleware->web(append: [PrivateResponse::class, ActiveAccount::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->dontFlash(['token', 'submission_key', 'password', 'password_confirmation', 'current_password']);
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );

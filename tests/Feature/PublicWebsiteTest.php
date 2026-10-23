@@ -15,7 +15,7 @@ class PublicWebsiteTest extends TestCase
                 ->assertSee('name="description"', false)->assertSee('property="og:image"', false)
                 ->assertSee('https://ideyra.example'.$path)->assertSee('aria-current="page"', false)
                 ->assertSee('v'.config('ideyra.version'))->assertDontSee('Official brand asset missing');
-            foreach (['home', 'about', 'features', 'for-students', 'for-institutions', 'contact', 'login', 'register'] as $name) {
+            foreach (['home', 'about', 'features', 'for-students', 'for-institutions', 'contact', 'login', 'apply'] as $name) {
                 $response->assertSee(route($name));
             }
         }
@@ -54,7 +54,8 @@ class PublicWebsiteTest extends TestCase
     public function test_authentication_pages_render_and_are_not_indexable(): void
     {
         $this->get('/login')->assertOk()->assertSee('<title>Log In | Ideyra</title>', false)->assertSee('noindex, nofollow');
-        $this->get('/register')->assertOk()->assertSee('Create account')->assertSee('noindex, nofollow');
+        $this->get('/register')->assertNotFound();
+        $this->get('/forgot-password')->assertOk()->assertSee('noindex, nofollow');
     }
 
     public function test_maskable_artwork_stays_within_safe_zone(): void
