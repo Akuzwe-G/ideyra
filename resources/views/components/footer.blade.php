@@ -1,0 +1,1 @@
+<footer class="site-footer"><div class="container footer-inner"><span>© {{ config('ideyra.copyright_year') }} {{ config('ideyra.name') }} · v{{ config('ideyra.version') }}</span><span>{{ config('ideyra.tagline') }}</span><button class="text-button" data-install hidden>Install Ideyra</button></div></footer>

@@ -1,0 +1,5 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="{{ config('ideyra.brand.navy') }}"><title>Offline · {{ config('ideyra.name') }}</title>
+@vite('resources/css/app.css')
+<style>body{margin:0;background:{{ config('ideyra.brand.sky') }};color:{{ config('ideyra.brand.navy') }};font:1rem/1.7 Montserrat,system-ui;display:grid;min-height:100svh;place-items:center}main{max-width:32rem;padding:2rem}a{color:{{ config('ideyra.brand.blue') }}}a:focus-visible{outline:3px solid currentColor;outline-offset:5px}</style></head>
+<body><main><p>{{ config('ideyra.name') }} / {{ config('ideyra.tagline') }}</p><h1>A little pause. Your next idea can wait.</h1><p>You’re offline. Connect to the internet to open your workspace. Personal ideas and projects are never stored in this shared offline cache.</p><a href="/">Try again</a><p>© {{ config('ideyra.copyright_year') }} {{ config('ideyra.name') }} · v{{ config('ideyra.version') }}</p></main></body></html>
