@@ -12,8 +12,11 @@ class FoundationController extends Controller
     {
         $icons = [];
         foreach ([192, 512] as $size) {
-            if (is_file(public_path("brand/icon-{$size}.png"))) {
-                $icons[] = ['src' => "/brand/icon-{$size}.png", 'sizes' => "{$size}x{$size}", 'type' => 'image/png', 'purpose' => 'any'];
+            foreach (['any' => 'pwa', 'maskable' => 'pwa-maskable'] as $purpose => $prefix) {
+                $path = "/assets/brand/{$prefix}-{$size}x{$size}.png";
+                if (is_file(public_path($path))) {
+                    $icons[] = ['src' => $path, 'sizes' => "{$size}x{$size}", 'type' => 'image/png', 'purpose' => $purpose];
+                }
             }
         }
 
@@ -37,7 +40,13 @@ class FoundationController extends Controller
             }
         }
         $assets = array_values(array_unique($assets));
-        $revision = hash('sha256', json_encode($assets).file_get_contents(resource_path('views/pwa/offline.blade.php')).file_get_contents(resource_path('views/pwa/worker.blade.php')).json_encode(config('ideyra')));
+        $brandHashes = [];
+        foreach (array_merge(glob(public_path('assets/brand/*.png')), glob(public_path('assets/brand/*.ico'))) as $file) {
+            $path = '/assets/brand/'.basename($file);
+            $assets[] = $path;
+            $brandHashes[$path] = hash_file('sha256', $file);
+        }
+        $revision = hash('sha256', json_encode([$assets, $brandHashes]).file_get_contents(resource_path('views/pwa/offline.blade.php')).file_get_contents(resource_path('views/pwa/worker.blade.php')).json_encode(config('ideyra')));
 
         return response()->view('pwa.worker', compact('assets', 'revision'))
             ->header('Content-Type', 'application/javascript')->header('Cache-Control', 'no-cache, no-store')
@@ -54,5 +63,20 @@ class FoundationController extends Controller
         abort_unless(app()->environment(['local', 'testing']), 404);
 
         return view('preview', compact('layout'));
+    }
+
+    public function sitemap(): Response
+    {
+        return response()->view('pwa.sitemap')
+            ->header('Content-Type', 'application/xml');
+    }
+
+    public function robots(): Response
+    {
+        $rules = app()->environment('production')
+            ? "User-agent: *\nAllow: /\nDisallow: /dashboard\nDisallow: /login\nDisallow: /register\nDisallow: /preview/\nSitemap: ".rtrim(config('app.url'), '/')."/sitemap.xml\n"
+            : "User-agent: *\nDisallow: /\n";
+
+        return response($rules)->header('Content-Type', 'text/plain');
     }
 }

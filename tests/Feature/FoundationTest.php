@@ -12,10 +12,11 @@ class FoundationTest extends TestCase
             ->assertSee(config('ideyra.name'))
             ->assertSee('Imagine.')->assertSee('Build.')->assertSee('Achieve.')
             ->assertSee('v'.config('ideyra.version'))
-            ->assertSee('Registration coming soon')
-            ->assertSee('Brand asset pending')
-            ->assertDontSee('href="/register"', false)
-            ->assertDontSee('href="/login"', false);
+            ->assertSee('Get Started')
+            ->assertSee('Workspace tools are in development')
+            ->assertSee('ideyra-wordmark.png')
+            ->assertSee(route('register'))
+            ->assertSee(route('login'));
     }
 
     public function test_manifest_is_valid_and_does_not_reference_missing_icons(): void
@@ -45,7 +46,7 @@ class FoundationTest extends TestCase
         $assets = json_decode($matches[1], true, flags: JSON_THROW_ON_ERROR);
         $this->assertNotEmpty($assets, 'Run the production build before this test.');
         foreach ($assets as $asset) {
-            $this->assertStringStartsWith('/build/', $asset);
+            $this->assertTrue(str_starts_with($asset, '/build/') || str_starts_with($asset, '/assets/brand/'));
             $this->assertFileExists(public_path(ltrim($asset, '/')));
         }
     }

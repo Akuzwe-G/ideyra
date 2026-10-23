@@ -1,3 +1,28 @@
+const menuToggle = document.querySelector('[data-menu-toggle]');
+const publicNavigation = document.querySelector('#public-navigation');
+if (menuToggle && publicNavigation) {
+    menuToggle.hidden = false;
+    publicNavigation.classList.add('menu-enhanced');
+    const closeMenu = () => {
+        menuToggle.setAttribute('aria-expanded', 'false');
+        publicNavigation.classList.remove('menu-open');
+    };
+    menuToggle.addEventListener('click', () => {
+        const open = menuToggle.getAttribute('aria-expanded') !== 'true';
+        menuToggle.setAttribute('aria-expanded', String(open));
+        publicNavigation.classList.toggle('menu-open', open);
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && menuToggle.getAttribute('aria-expanded') === 'true') {
+            closeMenu();
+            menuToggle.focus();
+        }
+    });
+    publicNavigation.addEventListener('click', event => {
+        if (event.target.closest('a')) closeMenu();
+    });
+}
+
 document.querySelectorAll('[data-open-dialog]').forEach(button => {
     button.addEventListener('click', () => document.getElementById(button.dataset.openDialog)?.showModal());
 });

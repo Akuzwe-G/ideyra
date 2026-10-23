@@ -8,6 +8,7 @@ return [
     'brand' => [
         'navy' => '#132447', 'blue' => '#3759D7', 'teal' => '#16B8C6',
         'sky' => '#EEF3FF', 'white' => '#FFFFFF', 'slate' => '#62718A',
-        'icon' => '/brand/icon.svg', 'text' => '/brand/text.svg',
+        'amber' => '#F4A340',
+        'icon' => '/assets/brand/ideyra-icon.png', 'text' => '/assets/brand/ideyra-wordmark.png',
     ],
 ];

@@ -6,3 +6,5 @@ use Illuminate\Support\Facades\Route;
 Route::get('/manifest.webmanifest', [FoundationController::class, 'manifest'])->name('manifest');
 Route::get('/sw.js', [FoundationController::class, 'worker'])->name('worker');
 Route::get('/offline.html', [FoundationController::class, 'offline'])->name('offline');
+Route::get('/sitemap.xml', [FoundationController::class, 'sitemap'])->name('sitemap');
+Route::get('/robots.txt', [FoundationController::class, 'robots'])->name('robots');
