@@ -58,6 +58,7 @@ test('System Administrator reviews an application and explicitly creates a draft
     await page.getByLabel('Review status', { exact: true }).selectOption('approved');
     await page.getByLabel('Private internal note').fill('Private browser reviewer note.');
     await page.getByRole('button', { name: 'Record review' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Confirm change' }).click();
     await page.getByRole('link', { name: 'Begin explicit institution onboarding' }).click();
     await page.getByLabel('Unique institution slug').fill('browser-onboarded-' + Date.now());
     await page.getByRole('button', { name: 'Save institution profile' }).click();
@@ -97,7 +98,7 @@ test('institution administrator manages academic structure assignments and scope
     await page.getByLabel('Programme', { exact: true }).selectOption({ label: 'Browser Engineering' });
     await page.getByLabel('Intake', { exact: true }).selectOption({ label: 'Browser intake' });
     await page.getByRole('button', { name: 'Save academic record' }).click();
-    await page.getByRole('link', { name: 'Staff & student assignments' }).click();
+    await page.getByRole('row').filter({ hasText: 'Browser class' }).getByRole('link', { name: 'Staff & student assignments' }).click();
     await page.getByLabel('Active institutional member').selectOption({ label: 'Browser Student / Student' });
     await page.getByLabel('Assignment', { exact: true }).selectOption('class_representative');
     await page.getByRole('button', { name: 'Save class assignment' }).click();
@@ -105,6 +106,7 @@ test('institution administrator manages academic structure assignments and scope
     await page.goto('/institutions/' + institution + '/members/' + fixture().student_member);
     await page.getByLabel('Override projects.approve', { exact: true }).selectOption('grant');
     await page.getByRole('button', { name: 'Save scoped permissions' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Confirm change' }).click();
     await expect(page.getByText('Scoped permissions saved.', { exact: false })).toBeVisible();
     for (const width of [1440, 768, 390, 360]) {
         await page.setViewportSize({ width, height: 844 });

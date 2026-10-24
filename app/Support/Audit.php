@@ -14,5 +14,6 @@ class Audit
             'action' => $action, 'subject_type' => class_basename($subject), 'subject_id' => $subject->getKey(),
             'metadata' => $metadata,
         ]);
+        WorkspaceNotifications::record($action, $subject, $institutionId, $metadata);
     }
 }

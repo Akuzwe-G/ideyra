@@ -63,6 +63,7 @@ test('administrator-issued login logout and contact submission retain CSRF prote
         return false;
     })).toBe(false);
     expect((await page.request.get('/system')).status()).toBe(403);
+    await page.locator('[data-profile-menu]>summary').click();
     await page.getByRole('button', { name: 'Log out' }).click();
     await page.goto('/dashboard');
     await expect(page).toHaveURL(/\/login$/);

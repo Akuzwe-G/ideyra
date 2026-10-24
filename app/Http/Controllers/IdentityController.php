@@ -7,6 +7,7 @@ use App\Models\IdentityInvitation;
 use App\Models\Institution;
 use App\Models\User;
 use App\Support\Audit;
+use App\Support\DashboardAnalytics;
 use App\Support\IdentityOnboarding;
 use App\Support\InstitutionAccess;
 use Illuminate\Auth\Events\PasswordReset;
@@ -15,9 +16,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Throwable;
 
 class IdentityController extends Controller
@@ -29,15 +33,31 @@ class IdentityController extends Controller
         return view('identity.dashboard', compact('memberships'));
     }
 
-    public function workspace(Institution $institution): View
+    public function workspace(Request $request, Institution $institution, DashboardAnalytics $analytics): View
     {
         InstitutionAccess::authorize($institution);
         $member = InstitutionAccess::membership($institution);
-        $classes = AcademicClass::where('institution_id', $institution->id)
+        $classes = AcademicClass::with('programme', 'intake', 'academicYear')->where('institution_id', $institution->id)
             ->when(! InstitutionAccess::allows($institution, 'academic.classes'), fn ($query) => $query->whereIn('id', DB::table('class_assignments')->where('membership_id', $member?->id)->select('academic_class_id')))
             ->orderBy('name')->paginate(15);
 
-        return view('institution.dashboard', compact('institution', 'member', 'classes'));
+        $filters = $analytics->filters($request);
+        $data = DashboardAnalytics::canViewInstitution($institution) ? $analytics->institution($institution, $filters) : null;
+        $overview = [];
+        if ($data) {
+            if (InstitutionAccess::allows($institution, 'members.view')) {
+                $activeMembers = $institution->memberships()->where('status', 'active')->whereHas('user', fn ($query) => $query->where('status', 'active'));
+                $overview['Students'] = (clone $activeMembers)->whereHas('role', fn ($query) => $query->where('name', 'Student'))->count();
+                $overview['Lecturers and mentors'] = (clone $activeMembers)->whereHas('role', fn ($query) => $query->whereIn('name', ['Lecturer / Teacher', 'Mentor / Supervisor']))->count();
+            }
+            foreach (['years' => ['academic_years', 'Academic years'], 'intakes' => ['intakes', 'Intakes'], 'programmes' => ['programmes', 'Programmes'], 'classes' => ['academic_classes', 'Classes']] as $permission => [$table, $label]) {
+                if (InstitutionAccess::allows($institution, 'academic.'.$permission)) {
+                    $overview[$label] = DB::table($table)->where('institution_id', $institution->id)->count();
+                }
+            }
+        }
+
+        return view('institution.dashboard', compact('institution', 'member', 'classes', 'filters', 'overview') + ['analytics' => $data]);
     }
 
     public function profile(Request $request): View|RedirectResponse
@@ -45,24 +65,52 @@ class IdentityController extends Controller
         if ($request->isMethod('post')) {
             $data = $request->validate(['name' => ['required', 'string', 'max:100'], 'phone' => ['nullable', 'string', 'max:40'],
                 'password' => ['nullable', 'confirmed', 'max:255', PasswordRule::min(12)->mixedCase()->numbers()],
+                'avatar' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048', 'dimensions:max_width=4096,max_height=4096'],
+                'remove_avatar' => ['nullable', 'boolean'],
                 'current_password' => ['required_with:password', 'nullable', 'current_password']]);
-            DB::transaction(function () use ($data): void {
-                $user = auth()->user();
-                $user->forceFill(collect($data)->only(['name', 'phone'])->all());
-                if (! empty($data['password'])) {
-                    $user->password = $data['password'];
-                    $user->setRememberToken(Str::random(60));
-                    DB::table('sessions')->where('user_id', $user->id)->where('id', '!=', session()->getId())->delete();
+            $newAvatar = $request->file('avatar')?->store('avatars', 'local');
+            if ($request->hasFile('avatar') && ! $newAvatar) {
+                throw ValidationException::withMessages(['avatar' => 'The picture could not be stored. Please try again.']);
+            }
+            $oldAvatar = $request->user()->avatar_path;
+            try {
+                DB::transaction(function () use ($data, $newAvatar): void {
+                    $user = auth()->user();
+                    $user->forceFill(collect($data)->only(['name', 'phone'])->all());
+                    if ($newAvatar || ($data['remove_avatar'] ?? false)) {
+                        $user->avatar_path = $newAvatar ?: null;
+                    }
+                    if (! empty($data['password'])) {
+                        $user->password = $data['password'];
+                        $user->setRememberToken(Str::random(60));
+                        DB::table('sessions')->where('user_id', $user->id)->where('id', '!=', session()->getId())->delete();
+                    }
+                    $user->save();
+                    Audit::record('identity.profile_updated', $user, null, ['password_changed' => ! empty($data['password'])]);
+                });
+            } catch (Throwable $exception) {
+                if ($newAvatar) {
+                    Storage::disk('local')->delete($newAvatar);
                 }
-                $user->save();
-                Audit::record('identity.profile_updated', $user, null, ['password_changed' => ! empty($data['password'])]);
-            });
+                throw $exception;
+            }
+            if ($oldAvatar && ($newAvatar || ($data['remove_avatar'] ?? false))) {
+                Storage::disk('local')->delete($oldAvatar);
+            }
             $request->session()->regenerate();
 
             return back()->with('status', 'Your profile was updated.');
         }
 
         return view('identity.profile');
+    }
+
+    public function avatar(Request $request): BinaryFileResponse
+    {
+        $path = $request->user()->avatar_path;
+        abort_unless($path && Storage::disk('local')->exists($path), 404);
+
+        return response()->file(Storage::disk('local')->path($path), ['Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
     }
 
     public function activation(Request $request, string $invitation, IdentityOnboarding $onboarding): View|RedirectResponse

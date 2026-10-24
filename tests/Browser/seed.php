@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\AcademicClass;
 use App\Models\Institution;
 use App\Models\JoinApplication;
 use App\Models\Membership;
@@ -7,6 +8,7 @@ use App\Models\Role;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Support\Facades\DB;
 
 require __DIR__.'/../../vendor/autoload.php';
 $app = require __DIR__.'/../../bootstrap/app.php';
@@ -27,5 +29,7 @@ $admin = User::factory()->create(['name' => 'Browser Institution Administrator',
 Membership::factory()->create(['institution_id' => $institution->id, 'user_id' => $admin->id, 'role_id' => Role::where('name', 'Institution Administrator')->value('id'), 'created_by' => $system->id]);
 $student = User::factory()->create(['name' => 'Browser Student', 'email' => 'student@browser.example.test', 'password' => $password]);
 $member = Membership::factory()->create(['institution_id' => $institution->id, 'user_id' => $student->id, 'created_by' => $system->id]);
+$analyticsClass = AcademicClass::factory()->create(['institution_id' => $institution->id, 'name' => 'Analytics cohort']);
+DB::table('class_assignments')->insert(['institution_id' => $institution->id, 'academic_class_id' => $analyticsClass->id, 'membership_id' => $member->id, 'assignment' => 'student']);
 $application = JoinApplication::factory()->create();
 echo json_encode(['institution' => $institution->id, 'student_member' => $member->id, 'application' => $application->uuid]);

@@ -19,6 +19,11 @@ use Illuminate\Support\Str;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
+    public function initials(): string
+    {
+        return collect(preg_split('/\s+/u', trim($this->name), -1, PREG_SPLIT_NO_EMPTY))->take(2)->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))->implode('') ?: 'I';
+    }
+
     public function sendPasswordResetNotification(mixed $token): void
     {
         if (config('mail.mailers.'.config('mail.default').'.transport') === 'log') {

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AcademicController;
+use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\FoundationController;
 use App\Http\Controllers\IdentityController;
 use App\Http\Controllers\InstitutionController;
 use App\Http\Controllers\MembershipController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SystemController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,7 +39,13 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/profile', [IdentityController::class, 'profile'])->name('profile');
     Route::post('/profile', [IdentityController::class, 'profile'])->name('profile.update');
+    Route::get('/profile/avatar', [IdentityController::class, 'avatar'])->name('profile.avatar');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+    Route::patch('/notifications/{notification}', [NotificationController::class, 'update'])->name('notifications.update');
+    Route::get('/notifications/{notification}/open', [NotificationController::class, 'open'])->name('notifications.open');
     Route::get('/institutions/{institution}/workspace', [IdentityController::class, 'workspace'])->name('institution.workspace');
+    Route::get('/institutions/{institution}/analytics/{chart}/csv', [AnalyticsController::class, 'institution'])->name('institution.analytics.csv');
     Route::get('/institutions/{institution}/profile', [InstitutionController::class, 'edit'])->name('institutions.edit');
     Route::put('/institutions/{institution}/profile', [InstitutionController::class, 'update'])->name('institutions.update');
     Route::get('/institutions/{institution}/logo', [InstitutionController::class, 'logoFile'])->name('institutions.logo');
@@ -60,6 +68,8 @@ Route::middleware('auth')->group(function (): void {
 });
 Route::middleware(['auth', 'can:system-access'])->prefix('system')->group(function (): void {
     Route::get('/', [SystemController::class, 'dashboard'])->name('system.dashboard');
+    Route::get('/users', [SystemController::class, 'users'])->name('system.users');
+    Route::get('/analytics/{chart}/csv', [AnalyticsController::class, 'system'])->name('system.analytics.csv');
     Route::get('/applications', [SystemController::class, 'applications'])->name('system.applications');
     Route::get('/applications/{application}', [SystemController::class, 'application'])->name('system.applications.show');
     Route::post('/applications/{application}/review', [SystemController::class, 'review'])->name('system.applications.review');

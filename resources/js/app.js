@@ -1,4 +1,18 @@
 const menuToggle = document.querySelector('[data-menu-toggle]');
+if (document.querySelector('[data-app-shell]')) import('./workspace.js');
+document.querySelectorAll('[data-password-toggle]').forEach(button => {
+    button.hidden = false;
+    button.addEventListener('click', () => {
+        const input = button.parentElement.querySelector('input');
+        input.type = input.type === 'password' ? 'text' : 'password';
+        button.setAttribute('aria-label', input.type === 'password' ? 'Show password' : 'Hide password');
+    });
+});
+if (document.querySelector('[data-analytics]')) {
+    import('./analytics.js').catch(() => {
+        document.querySelector('[data-analytics-status]').textContent = 'Interactive charts are unavailable. Summaries, data tables and CSV exports remain available.';
+    });
+}
 if (document.querySelector('[data-application-wizard]')) {
     import('./application-wizard.js').catch(() => {});
 }

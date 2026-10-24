@@ -8,8 +8,10 @@ use App\Models\Institution;
 use App\Models\JoinApplication;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\User;
 use App\Support\ApplicationWorkflow;
 use App\Support\Audit;
+use App\Support\DashboardAnalytics;
 use App\Support\InstitutionAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,17 +22,34 @@ use Illuminate\View\View;
 
 class SystemController extends Controller
 {
-    public function dashboard(): View
+    public function dashboard(Request $request, DashboardAnalytics $analytics): View
     {
         InstitutionAccess::requireSystem();
 
-        return view('system.dashboard', ['institutions' => Institution::count(), 'applications' => JoinApplication::count(), 'pending' => JoinApplication::whereIn('status', ['submitted', 'under_review', 'more_information_requested'])->count()]);
+        $filters = $analytics->filters($request);
+
+        $totals = ['Total institutions' => Institution::count(), 'Active institutions' => Institution::where('status', 'active')->count(), 'Total users' => User::count(), 'Total applications' => JoinApplication::count(), 'Pending applications' => JoinApplication::whereIn('status', ['submitted', 'under_review', 'more_information_requested'])->count(), 'Approved applications' => JoinApplication::where('status', 'approved')->count()];
+
+        return view('system.dashboard', ['filters' => $filters, 'analytics' => $analytics->system($filters), 'totals' => $totals, 'pendingInstitutions' => Institution::whereIn('status', ['draft', 'pending_activation'])->count(), 'recentOnboarded' => Institution::whereNotNull('approved_at')->latest('approved_at')->limit(5)->get(['id', 'name', 'status', 'approved_at'])]);
+    }
+
+    public function users(Request $request): View
+    {
+        InstitutionAccess::requireSystem();
+        $request->validate(['q' => ['nullable', 'string', 'max:100'], 'status' => ['nullable', Rule::in(['active', 'pending', 'suspended'])]]);
+        $users = User::with('roles')->withCount('memberships')->when($request->filled('q'), fn ($query) => $query->where(fn ($search) => $search->where('name', 'like', '%'.$request->string('q').'%')->orWhere('email', 'like', '%'.$request->string('q').'%')))->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))->orderBy('name')->paginate(15)->withQueryString();
+
+        return view('system.users', compact('users'));
     }
 
     public function applications(Request $request): View
     {
         InstitutionAccess::requireSystem();
+        $request->validate(['q' => ['nullable', 'string', 'max:100'], 'institution' => ['nullable', 'string', 'max:100'], 'country' => ['nullable', 'string', 'max:100'], 'type' => ['nullable', Rule::in(['institution', 'student'])], 'status' => ['nullable', Rule::in(['submitted', 'under_review', 'more_information_requested', 'approved', 'rejected', 'onboarded'])], 'queue' => ['nullable', Rule::in(['pending'])]]);
         $query = JoinApplication::query();
+        if ($request->query('queue') === 'pending') {
+            $query->whereIn('status', ['submitted', 'under_review', 'more_information_requested']);
+        }
         foreach (['type', 'status', 'country'] as $field) {
             if ($request->filled($field)) {
                 $query->where($field, $request->string($field));

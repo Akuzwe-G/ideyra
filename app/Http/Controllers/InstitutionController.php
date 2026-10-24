@@ -22,7 +22,8 @@ class InstitutionController extends Controller
     public function index(Request $request): View
     {
         InstitutionAccess::requireSystem();
-        $institutions = Institution::when($request->filled('q'), fn ($query) => $query->where('name', 'like', '%'.$request->string('q').'%'))->orderBy('name')->paginate(15)->withQueryString();
+        $request->validate(['q' => ['nullable', 'string', 'max:100'], 'status' => ['nullable', Rule::in(['draft', 'pending_activation', 'active', 'suspended', 'archived'])], 'country' => ['nullable', 'string', 'max:100']]);
+        $institutions = Institution::when($request->filled('q'), fn ($query) => $query->where('name', 'like', '%'.$request->string('q').'%'))->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))->when($request->filled('country'), fn ($query) => $query->where('country', $request->string('country')))->orderBy('name')->paginate(15)->withQueryString();
 
         return view('system.institutions', compact('institutions'));
     }

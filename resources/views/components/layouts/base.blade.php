@@ -1,13 +1,14 @@
-@props(['title' => null, 'description' => 'A student-centred home for ideas, projects, opportunities and professional growth. Discover the vision for Ideyra.'])
+@props(['title' => null, 'description' => 'A student-centred home for ideas, projects, opportunities and professional growth. Discover the vision for Ideyra.', 'workspace' => false])
 @php
     $documentTitle = $title ? $title.' | '.config('ideyra.name') : config('ideyra.name').' | '.config('ideyra.tagline');
     $canonical = rtrim(config('app.url'), '/').request()->getPathInfo();
-    $privatePage = request()->is('login', 'dashboard', 'profile', 'system', 'system/*', 'institutions/*', 'applications/*', 'activate/*', 'forgot-password', 'reset-password*', 'apply/*', 'preview/*');
+    $privatePage = request()->is('login', 'dashboard', 'profile', 'profile/*', 'notifications', 'notifications/*', 'system', 'system/*', 'institutions/*', 'applications/*', 'activate/*', 'forgot-password', 'reset-password*', 'apply/*', 'preview/*');
 @endphp
 <!doctype html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="light" @if($workspace) data-workspace @endif>
 <head>
     <meta charset="utf-8">
+    @if($workspace)<script>try{document.documentElement.dataset.theme=localStorage.getItem('ideyra-theme')==='dark'?'dark':'light';document.documentElement.dataset.sidebar=localStorage.getItem('ideyra-sidebar')==='collapsed'?'collapsed':'expanded'}catch(e){}</script>@endif
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="{{ $description }}">
     <meta name="theme-color" content="{{ config('ideyra.brand.navy') }}">
