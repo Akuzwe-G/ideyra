@@ -26,5 +26,8 @@ class RolePermissionSeeder extends Seeder
             Role::firstOrCreate(['name' => $name], compact('scope', 'permissions'));
         }
         DB::table('platform_settings')->insertOrIgnore(['key' => 'applications_open', 'value' => json_encode(true)]);
+        $this->call(PhaseTwoPermissionSeeder::class);
+        $this->call(PhaseThreeSeeder::class);
+        $this->call(PhaseFourSeeder::class);
     }
 }

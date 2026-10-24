@@ -108,6 +108,12 @@ html[data-workspace][data-theme="dark"] .status-suspended,html[data-workspace][d
 .attention-panel { display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:1rem 1.25rem; border:1px solid var(--line); border-left:3px solid #16B8C6; border-radius:.75rem; background:var(--surface); }
 .attention-panel p { font-size:.72rem; line-height:1.8; }
 .attention-panel small { font-size:.64rem; color:var(--muted); }
+.personal-workspace-intro { display:grid; gap:1.5rem; margin-bottom:1.5rem; }
+.personal-workspace-intro > .page-toolbar { margin-bottom:0; align-items:flex-start; }
+.personal-workspace-actions { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,28rem),1fr)); gap:1rem; }
+.personal-workspace-actions .attention-panel { align-items:flex-start; flex-direction:column; gap:1rem; padding:1.25rem; }
+.personal-workspace-actions .attention-panel .button { margin-top:auto; }
+.personal-workspace-actions .personal-career-shortcut { border-left:1px solid var(--line); }
 .quick-actions { display:flex; flex-wrap:wrap; gap:.6rem; margin-block:1.25rem; }
 .premium-workspace .admin-footer { display:flex; justify-content:space-between; padding:1rem 1.8rem; font-size:.55rem; }
 .profile-page { display:grid; grid-template-columns:280px minmax(0,1fr); gap:1.3rem; align-items:start; }

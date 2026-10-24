@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Support\AiProvider;
+use App\Support\AiProviderContract;
 use App\Support\InstitutionAccess;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -17,7 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(AiProviderContract::class, AiProvider::class);
     }
 
     /**

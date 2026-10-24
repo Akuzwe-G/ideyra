@@ -79,7 +79,12 @@ class DashboardAnalytics
             $this->chart('users', 'User growth', 'line', $userDates, $users, 'New identities created in the selected period, including pending accounts. Not a cumulative total.', 'New accounts'),
         ];
 
-        return ['charts' => $charts, 'kpis' => ['Applications received' => array_sum($received), 'Awaiting review' => (clone $applications)->whereIn('status', ['submitted', 'under_review', 'more_information_requested'])->count(), 'Institutions created' => (clone $institutions)->count(), 'New accounts' => array_sum($users)],
+        $opportunities = InstitutionAccess::system() ? app(OpportunityAnalytics::class)->data($filters, 'system') : null;
+        if ($opportunities && $opportunities['hasData']) {
+            $charts = array_merge($charts, $opportunities['charts']);
+        }
+
+        return ['opportunityKpis' => $opportunities['kpis'] ?? [], 'charts' => $charts, 'kpis' => ['Applications received' => array_sum($received), 'Awaiting review' => (clone $applications)->whereIn('status', ['submitted', 'under_review', 'more_information_requested'])->count(), 'Institutions created' => (clone $institutions)->count(), 'New accounts' => array_sum($users)],
             'recentApplications' => (clone $applications)->orderByDesc('created_at')->orderByDesc('id')->limit(5)->get(['uuid', 'reference', 'status', 'created_at']),
             'recentInstitutions' => (clone $institutions)->orderByDesc('created_at')->orderByDesc('id')->limit(5)->get(['id', 'name', 'status']),
             'activities' => $this->window(DB::table('audit_entries'), $filters)->orderByDesc('id')->limit(5)->get(['action', 'created_at'])];
@@ -105,7 +110,14 @@ class DashboardAnalytics
         [$dates, $growth] = $this->timeline(DB::table('memberships')->where('institution_id', $institution->id), $filters);
         $charts[] = $this->chart('members', 'Account growth', 'line', $dates, $growth, 'New institutional memberships created in the selected period, including pending or subsequently suspended members. Not global account creation.', 'New members');
 
-        return ['charts' => $charts, 'kpis' => ['Active members in cohort' => array_sum($values), 'Active students in cohort' => $values[0], 'New memberships' => array_sum($growth), 'Institution classes (all)' => DB::table('academic_classes')->where('institution_id', $institution->id)->count()],
+        $projects = app(ProjectAnalytics::class)->data($filters, $institution);
+        $charts = array_merge($charts, $projects['charts']);
+        $opportunities = auth()->user() && OpportunityAnalytics::institutionAllowed($institution, auth()->user()) ? app(OpportunityAnalytics::class)->data($filters, 'institution', $institution) : null;
+        if ($opportunities && $opportunities['hasData']) {
+            $charts = array_merge($charts, $opportunities['charts']);
+        }
+
+        return ['opportunityKpis' => $opportunities['kpis'] ?? [], 'projectKpis' => $projects['kpis'], 'charts' => $charts, 'kpis' => ['Active members in cohort' => array_sum($values), 'Active students in cohort' => $values[0], 'New memberships' => array_sum($growth), 'Institution classes (all)' => DB::table('academic_classes')->where('institution_id', $institution->id)->count()],
             'recentApplications' => collect(), 'recentInstitutions' => collect(),
             'activities' => InstitutionAccess::allows($institution, 'audit.view') ? $this->window(DB::table('audit_entries')->where('institution_id', $institution->id), $filters)->orderByDesc('id')->limit(5)->get(['action', 'created_at']) : collect()];
     }

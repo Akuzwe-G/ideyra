@@ -69,7 +69,7 @@ const dialog = shell.querySelector('[data-confirm-dialog]');
 let pendingForm = null;
 let pendingSubmitter = null;
 shell.querySelectorAll('form[method=POST]').forEach(form => {
-    const path = new URL(form.action).pathname;
+    const path = new URL(form.getAttribute('action') || location.href, document.baseURI).pathname;
     if (/\/members\/\d+(\/permissions|\/invitation)?$/.test(path) || /\/system\/(roles(\/\d+)?|settings)$/.test(path)) {
         form.dataset.confirm = 'Confirm this access or configuration change? Review the selected values before continuing.';
     }

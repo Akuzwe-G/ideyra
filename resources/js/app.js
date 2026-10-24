@@ -1,4 +1,6 @@
 const menuToggle = document.querySelector('[data-menu-toggle]');
+if (document.querySelector('[data-career-theme], [data-cv-preview], [data-cv-paper-viewport]')) import('./career.js');
+if (document.querySelector('[data-opportunity-editor], [data-group-application]')) import('./opportunities.js');
 if (document.querySelector('[data-app-shell]')) import('./workspace.js');
 document.querySelectorAll('[data-password-toggle]').forEach(button => {
     button.hidden = false;
@@ -102,3 +104,4 @@ if ('serviceWorker' in navigator && window.isSecureContext && !import.meta.env.D
         }
     });
 }
+if (document.querySelector('[data-ai-coach]')) import('./ai.js');

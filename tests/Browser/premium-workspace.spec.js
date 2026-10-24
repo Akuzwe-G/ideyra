@@ -31,6 +31,20 @@ test('desktop shell collapses with real icons and persists one theme across page
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.setViewportSize({ width: 1440, height: 1000 });
     await login(page);
+    for (const width of [1440, 768, 390]) {
+        await page.setViewportSize({ width, height: 1000 });
+        const layout = await page.locator('.personal-workspace-intro').evaluate(section => {
+            const welcome = section.querySelector('.page-toolbar').getBoundingClientRect();
+            const shortcuts = section.querySelector('.personal-workspace-actions').getBoundingClientRect();
+            const following = section.nextElementSibling.getBoundingClientRect();
+            return { welcomeGap: shortcuts.top - welcome.bottom, followingGap: following.top - shortcuts.bottom, overflow: document.documentElement.scrollWidth > innerWidth };
+        });
+        expect(layout.welcomeGap).toBeGreaterThanOrEqual(16);
+        expect(layout.followingGap).toBeGreaterThanOrEqual(16);
+        expect(layout.overflow).toBe(false);
+        await page.screenshot({ path: 'storage/app/personal-workspace-spacing-' + width + '.png', fullPage: false });
+    }
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto('/system');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     await expect(page.locator('.app-navigation .nav-item .icon')).toHaveCount(await page.locator('.app-navigation .nav-item').count());

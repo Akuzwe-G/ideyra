@@ -9,7 +9,10 @@ use App\Models\User;
 use App\Support\Audit;
 use App\Support\DashboardAnalytics;
 use App\Support\IdentityOnboarding;
+use App\Support\InnovationAccess;
 use App\Support\InstitutionAccess;
+use App\Support\OpportunityAnalytics;
+use App\Support\ProjectAnalytics;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,11 +29,18 @@ use Throwable;
 
 class IdentityController extends Controller
 {
-    public function dashboard(): View
+    public function dashboard(Request $request, DashboardAnalytics $analytics): View
     {
         $memberships = auth()->user()->memberships()->with('institution', 'role')->where('status', 'active')->whereHas('institution', fn ($query) => $query->where('status', 'active'))->get();
 
-        return view('identity.dashboard', compact('memberships'));
+        $filters = $analytics->filters($request);
+        $projectAnalytics = app(ProjectAnalytics::class)->data($filters);
+        $innovation = ['My ideas' => InnovationAccess::ideas(auth()->user())->where('owner_id', auth()->id())->count(), 'My projects' => InnovationAccess::projects(auth()->user())->count(), 'My groups' => InnovationAccess::groups(auth()->user())->count()];
+        $recentProjects = InnovationAccess::projects(auth()->user())->withCount(['tasks', 'tasks as done_count' => fn ($q) => $q->where('status', 'completed'), 'deliverables', 'deliverables as approved_count' => fn ($q) => $q->where('status', 'approved')])->latest()->limit(4)->get();
+
+        $opportunitySummary = app(OpportunityAnalytics::class)->personalSummary(auth()->user());
+
+        return view('identity.dashboard', compact('memberships', 'filters', 'projectAnalytics', 'innovation', 'recentProjects', 'opportunitySummary'));
     }
 
     public function workspace(Request $request, Institution $institution, DashboardAnalytics $analytics): View

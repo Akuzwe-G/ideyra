@@ -21,6 +21,7 @@ const isolatedEnvironment = {
     SESSION_DRIVER: 'database',
     CACHE_STORE: 'database',
     MAIL_MAILER: 'array',
+    IDEYRA_AI_ENABLED: 'false',
 };
 if (initializeDatabase) execFileSync('php', ['artisan', 'migrate', '--force', '--no-interaction'], { env: isolatedEnvironment });
 if (initializeDatabase) process.env.IDEYRA_BROWSER_FIXTURES = execFileSync('php', ['tests/Browser/seed.php'], { env: isolatedEnvironment }).toString();

@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Institution;
 use App\Models\JoinApplication;
+use App\Support\InnovationAccess;
 use App\Support\InstitutionAccess;
+use App\Support\OpportunityAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -38,6 +40,29 @@ class NotificationController extends Controller
     public function open(Request $request, string $notification): RedirectResponse
     {
         $data = $request->user()->notifications()->whereKey($notification)->firstOrFail()->data;
+        if (($data['target'] ?? null) === 'career_portfolio') {
+            return redirect()->route('career.portfolio');
+        }
+        if (($data['target'] ?? null) === 'career') {
+            return redirect()->route('career.verifications');
+        }
+        if (in_array($data['target'] ?? null, ['opportunity', 'opportunity_application', 'sponsorship'], true)) {
+            [$query,$route] = match ($data['target']) {
+                'opportunity' => [OpportunityAccess::visible($request->user()), 'opportunities.show'],
+                'opportunity_application' => [OpportunityAccess::applications($request->user()), 'opportunity-applications.show'],
+                'sponsorship' => [OpportunityAccess::sponsorships($request->user()), 'sponsorships.show'],
+            };
+            if ($record = $query->whereKey($data['subject_id'] ?? 0)->first()) {
+                return redirect()->route($route, $record);
+            }
+
+            return redirect()->route('notifications.index')->with('status', 'This record is no longer available in your authorised context.');
+        }
+        foreach (['idea' => [InnovationAccess::ideas($request->user()), 'ideas.show'], 'group' => [InnovationAccess::groups($request->user()), 'groups.show'], 'project' => [InnovationAccess::projects($request->user()), 'projects.show']] as $target => [$query,$route]) {
+            if (($data['target'] ?? null) === $target && $record = $query->whereKey($data['subject_id'] ?? 0)->first()) {
+                return redirect()->route($route, $record);
+            }
+        }
         if (($data['target'] ?? null) === 'application' && InstitutionAccess::system()) {
             $application = JoinApplication::find($data['subject_id']);
             if ($application) {

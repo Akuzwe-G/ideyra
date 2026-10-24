@@ -15,7 +15,14 @@
         <div class="sidebar-context"><span class="context-dot"></span><div><strong>{{ $institution?->name ?? ($systemAccess ? 'Platform administration' : 'Your workspace') }}</strong><small>{{ $currentRole }}</small></div></div>
         <nav class="app-navigation" aria-label="Workspace navigation">
             <p class="nav-section-label">Workspace</p>
+            <x-ui.nav-item :href="route('ai.index')" icon="sparkles" label="AI · Think further" :active="request()->routeIs('ai.index','ai.conversation','ai.activity')" />
+            @if($systemAccess)<x-ui.nav-item :href="route('ai.management')" icon="sparkles" label="AI Management" :active="request()->routeIs('ai.management')" />@endif
+            @if($institution && \App\Http\Controllers\AiController::administer($institution))<x-ui.nav-item :href="route('ai.institution',$institution)" icon="sparkles" label="Institution AI controls" :active="request()->routeIs('ai.institution')" />@endif
+            <x-ui.nav-item :href="route('career.index')" icon="briefcase-business" label="Career & Profile" :active="request()->routeIs('career.*')" />
             <x-ui.nav-item :href="route('dashboard')" icon="layout-dashboard" label="Personal workspace" :active="request()->routeIs('dashboard')" />
+            @foreach(['ideas.index'=>['book-open','Idea Vault','ideas.*'], 'groups.index'=>['users','Academic groups','groups.*'], 'projects.index'=>['files','Project Studio','projects.*'], 'work.mine'=>['calendar-days','My work','work.mine'], 'work.supervision'=>['graduation-cap','Supervision','work.supervision']] as $route=>[$icon,$label,$pattern])
+                <x-ui.nav-item :href="route($route)" :icon="$icon" :label="$label" :active="request()->routeIs($pattern)" />
+            @endforeach
             @if($systemAccess)
                 <p class="nav-section-label">Administration</p>
                 @foreach(['system.dashboard' => ['chart-no-axes-combined','Dashboard'], 'system.applications' => ['files','Applications'], 'institutions.index' => ['building-2','Institutions'], 'system.users' => ['users','Users'], 'system.roles' => ['shield-check','Roles & permissions'], 'system.audit' => ['history','Activity logs'], 'system.settings' => ['settings-2','Settings']] as $route => [$icon, $label])
@@ -34,6 +41,10 @@
             @elseif(!$systemAccess)
                 @foreach($workspaceMemberships as $workspaceMember)<x-ui.nav-item :href="route('institution.workspace', $workspaceMember->institution)" icon="school" :label="$workspaceMember->institution->name" />@endforeach
             @endif
+            <p class="nav-section-label">Opportunities & support</p>
+            <x-ui.nav-item :href="route('opportunities.index')" icon="graduation-cap" label="Opportunities Hub" :active="request()->routeIs('opportunities.*','opportunity-analytics.*')" />
+            <x-ui.nav-item :href="route('opportunity-applications.index')" icon="files" label="Opportunity applications" :active="request()->routeIs('opportunity-applications.*')" />
+            <x-ui.nav-item :href="route('sponsorships.index')" icon="users" label="Project support" :active="request()->routeIs('sponsorships.*')" />
             <p class="nav-section-label">Account</p>
             <x-ui.nav-item :href="route('notifications.index')" icon="bell" label="Notifications" :active="request()->routeIs('notifications.*')" />
             <x-ui.nav-item :href="route('profile')" icon="circle-user-round" label="My profile" :active="request()->routeIs('profile')" />

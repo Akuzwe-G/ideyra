@@ -1,0 +1,6 @@
+<x-layouts.admin :title="$project->title" :institution="$project->institution">
+<div class="button-row"><a class="button button-secondary" href="{{ route('ai.index',['feature'=>'project','related_id'=>$project->id,'institution_id'=>$project->institution_id]) }}"><x-ui.icon name="sparkles" />Project Mentor</a>@if(\App\Support\InnovationAccess::supervisor($project,auth()->user()))<a class="button button-secondary" href="{{ route('ai.index',['feature'=>'supervision','related_id'=>$project->id,'institution_id'=>$project->institution_id]) }}">Supervision Assistant</a>@endif</div>
+<div class="page-toolbar"><div><x-ui.status :status="$project->status" /><p>{{ $project->identifier }} · {{ $project->institution ? 'Institution-owned project' : 'Personal project' }}</p></div>@can('update',$project)@if(!in_array($project->status,['completed','cancelled','archived']))<x-ui.button :href="route('projects.edit',$project)" variant="secondary">Edit brief</x-ui.button>@endif @endcan</div>
+<nav class="innovation-tabs" aria-label="Project sections">@foreach(['overview','tasks','milestones','deliverables','team','feedback','activity'] as $section)<a href="{{ route('projects.show',[$project,'tab'=>$section]) }}" @if($tab===$section) aria-current="page" @endif>{{ ucfirst($section) }}</a>@endforeach</nav>
+@include('innovation.projects.tabs.'.$tab)
+</x-layouts.admin>

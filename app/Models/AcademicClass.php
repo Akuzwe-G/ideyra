@@ -12,6 +12,11 @@ class AcademicClass extends Model
 
     protected $guarded = [];
 
+    public function institution(): BelongsTo
+    {
+        return $this->belongsTo(Institution::class);
+    }
+
     public function programme(): BelongsTo
     {
         return $this->belongsTo(Programme::class);

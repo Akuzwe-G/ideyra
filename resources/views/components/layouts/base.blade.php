@@ -2,7 +2,7 @@
 @php
     $documentTitle = $title ? $title.' | '.config('ideyra.name') : config('ideyra.name').' | '.config('ideyra.tagline');
     $canonical = rtrim(config('app.url'), '/').request()->getPathInfo();
-    $privatePage = request()->is('login', 'dashboard', 'profile', 'profile/*', 'notifications', 'notifications/*', 'system', 'system/*', 'institutions/*', 'applications/*', 'activate/*', 'forgot-password', 'reset-password*', 'apply/*', 'preview/*');
+    $privatePage = $workspace || request()->is('login', 'dashboard', 'profile', 'profile/*', 'notifications', 'notifications/*', 'system', 'system/*', 'institutions/*', 'applications/*', 'activate/*', 'forgot-password', 'reset-password*', 'apply/*', 'preview/*');
 @endphp
 <!doctype html>
 <html lang="en" data-theme="light" @if($workspace) data-workspace @endif>

@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class PortfolioMessage extends Model
+{
+    use HasFactory;
+
+    protected $guarded = [];
+
+    public function portfolio(): BelongsTo
+    {
+        return $this->belongsTo(Portfolio::class);
+    }
+
+    protected function casts(): array
+    {
+        return ['sender_name' => 'encrypted', 'sender_email' => 'encrypted', 'message' => 'encrypted', 'read_at' => 'datetime'];
+    }
+}

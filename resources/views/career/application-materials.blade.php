@@ -1,0 +1,8 @@
+@php($careerMaterials=$isReviewer ? ($snapshots->first()['payload']['career_materials']??[]) : ($application->career_selection??[]))
+@if(!empty($careerMaterials['cv']) || !empty($careerMaterials['profile']) || !empty($careerMaterials['projects']) || !empty($careerMaterials['achievements']))<section class="card"><h2>Explicitly shared career materials</h2>
+@foreach($careerMaterials['profile']??[] as $key=>$value)<p class="innovation-prose"><strong>{{ ucwords(str_replace('_',' ',$key)) }}:</strong> {{ is_array($value)?implode(' · ',array_filter($value)):$value }}</p>@endforeach
+@if(isset($careerMaterials['cv']))<details><summary>Selected CV: {{ $careerMaterials['cv']['title'] }}</summary><p class="innovation-prose">{{ $careerMaterials['cv']['content']['contact']??'' }}</p>@foreach($careerMaterials['cv']['sections'] as $section)<h3>{{ config('career.sections.'.$section) }}</h3><p class="innovation-prose">{{ $careerMaterials['cv']['content'][$section]??'' }}</p>@endforeach</details>@endif
+@foreach($careerMaterials['projects']??[] as $project)<h3>{{ $project['title'] }}</h3><p>{{ $project['role'] }} · {{ $project['description'] }}</p><p>Self-reported reflection: {{ $project['reflection'] }}</p>@endforeach
+@foreach($careerMaterials['achievements']??[] as $achievement)<p>{{ $achievement['title'] }} · Verified by {{ $achievement['institution'] }} on {{ $achievement['verified_at'] }} (status at selection)</p>@endforeach
+</section>@endif
+@foreach($snapshots as $submitted)@if(isset($submitted['payload']['career_materials']['cv']))<p><a href="{{ route('career.application-cv',[$application,$submitted['version']]) }}">Download immutable CV from application version {{ $submitted['version'] }}</a></p>@endif @endforeach

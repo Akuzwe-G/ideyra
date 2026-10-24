@@ -1,0 +1,1 @@
+<section class="card"><h2>Project activity</h2>@forelse($activities as $entry)<article class="innovation-entry"><strong>{{ str_replace(['.','_'],' ',$entry->action) }}</strong><small>{{ $entry->actor?->name ?? 'System' }} · {{ $entry->created_at->format('d M Y H:i') }}</small></article>@empty<p>No activity yet.</p>@endforelse{{ $activities->links() }}</section>
