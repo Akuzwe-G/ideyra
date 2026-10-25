@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Role;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -40,6 +42,25 @@ class AuthenticationTest extends TestCase
         }
         $this->post('/login', ['email' => 'nobody@example.test', 'password' => 'incorrect'])->assertStatus(429);
         $this->assertGuest();
+    }
+
+    public function test_system_administrator_lands_on_administration_even_with_a_personal_intended_url(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+        $user = User::factory()->create(['password' => 'StrongPassword123']);
+        $user->roles()->attach(Role::where('name', 'System Administrator')->sole());
+        $this->withSession(['url.intended' => route('ideas.index')])->post(route('login.store'), ['email' => $user->email, 'password' => 'StrongPassword123'])->assertRedirectToRoute('system.dashboard');
+        $this->get(route('dashboard'))->assertRedirectToRoute('system.dashboard');
+        $this->get(route('login'))->assertRedirectToRoute('system.dashboard');
+        $response = $this->get(route('system.dashboard'))->assertOk();
+        $html = $response->getContent();
+        preg_match('/<nav class="app-navigation".*?<\/nav>/s', $html, $matches);
+        $this->assertStringContainsString('AI Management', $matches[0]);
+        $this->assertStringContainsString('Opportunities Hub', $matches[0]);
+        foreach (['Personal workspace', 'Career &amp; Profile', 'Idea Vault', 'Project Studio', 'Academic groups', 'My work', 'Supervision', 'Think further'] as $label) {
+            $this->assertStringNotContainsString($label, $matches[0]);
+        }
+        $this->assertLessThan(strpos($matches[0], 'Applications'), strpos($matches[0], 'Dashboard'));
     }
 
     public function test_invalid_email_types_return_validation_errors(): void

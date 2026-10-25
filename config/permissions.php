@@ -1,6 +1,23 @@
 <?php
 
 return [
+    'analytics.view_platform' => ['group' => 'Intelligence & reports', 'scope' => 'platform', 'implemented' => true],
+    'analytics.export_platform' => ['group' => 'Intelligence & reports', 'scope' => 'platform', 'implemented' => true],
+    'reports.generate_platform' => ['group' => 'Intelligence & reports', 'scope' => 'platform', 'implemented' => true],
+    'reports.view_history_platform' => ['group' => 'Intelligence & reports', 'scope' => 'platform', 'implemented' => true],
+    'reports.schedule_platform' => ['group' => 'Intelligence & reports', 'scope' => 'platform', 'implemented' => true],
+    'data_quality.view_platform' => ['group' => 'Intelligence & reports', 'scope' => 'platform', 'implemented' => true],
+    'analytics.view_institution' => ['group' => 'Intelligence & reports', 'scope' => 'institution', 'implemented' => true],
+    'analytics.view_programme' => ['group' => 'Intelligence & reports', 'scope' => 'institution', 'implemented' => true],
+    'analytics.export' => ['group' => 'Intelligence & reports', 'scope' => 'institution', 'implemented' => true],
+    'reports.generate' => ['group' => 'Intelligence & reports', 'scope' => 'institution', 'implemented' => true],
+    'reports.view_history' => ['group' => 'Intelligence & reports', 'scope' => 'institution', 'implemented' => true],
+    'reports.schedule' => ['group' => 'Intelligence & reports', 'scope' => 'institution', 'implemented' => true],
+    'kpis.create' => ['group' => 'Intelligence & reports', 'scope' => 'institution', 'implemented' => true],
+    'kpis.edit' => ['group' => 'Intelligence & reports', 'scope' => 'institution', 'implemented' => true],
+    'kpis.approve' => ['group' => 'Intelligence & reports', 'scope' => 'institution', 'implemented' => true],
+    'kpis.view' => ['group' => 'Intelligence & reports', 'scope' => 'institution', 'implemented' => true],
+    'data_quality.view' => ['group' => 'Intelligence & reports', 'scope' => 'institution', 'implemented' => true],
     'career.verify' => ['group' => 'Professional identity', 'scope' => 'institution', 'implemented' => true],
     'career.report' => ['group' => 'Professional identity', 'scope' => 'institution', 'implemented' => true],
     'opportunities.apply' => ['group' => 'Opportunities', 'scope' => 'institution', 'implemented' => true],

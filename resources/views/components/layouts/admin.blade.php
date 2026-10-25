@@ -14,22 +14,24 @@
         <div class="sidebar-brand"><span class="brand-expanded"><x-brand /></span><span class="brand-collapsed"><x-brand compact /></span><button type="button" class="icon-button drawer-close" data-drawer-close aria-label="Close navigation" hidden><x-ui.icon name="x" /></button></div>
         <div class="sidebar-context"><span class="context-dot"></span><div><strong>{{ $institution?->name ?? ($systemAccess ? 'Platform administration' : 'Your workspace') }}</strong><small>{{ $currentRole }}</small></div></div>
         <nav class="app-navigation" aria-label="Workspace navigation">
+            @unless($systemAccess)
             <p class="nav-section-label">Workspace</p>
             <x-ui.nav-item :href="route('ai.index')" icon="sparkles" label="AI · Think further" :active="request()->routeIs('ai.index','ai.conversation','ai.activity')" />
-            @if($systemAccess)<x-ui.nav-item :href="route('ai.management')" icon="sparkles" label="AI Management" :active="request()->routeIs('ai.management')" />@endif
             @if($institution && \App\Http\Controllers\AiController::administer($institution))<x-ui.nav-item :href="route('ai.institution',$institution)" icon="sparkles" label="Institution AI controls" :active="request()->routeIs('ai.institution')" />@endif
             <x-ui.nav-item :href="route('career.index')" icon="briefcase-business" label="Career & Profile" :active="request()->routeIs('career.*')" />
             <x-ui.nav-item :href="route('dashboard')" icon="layout-dashboard" label="Personal workspace" :active="request()->routeIs('dashboard')" />
             @foreach(['ideas.index'=>['book-open','Idea Vault','ideas.*'], 'groups.index'=>['users','Academic groups','groups.*'], 'projects.index'=>['files','Project Studio','projects.*'], 'work.mine'=>['calendar-days','My work','work.mine'], 'work.supervision'=>['graduation-cap','Supervision','work.supervision']] as $route=>[$icon,$label,$pattern])
                 <x-ui.nav-item :href="route($route)" :icon="$icon" :label="$label" :active="request()->routeIs($pattern)" />
             @endforeach
+            @endunless
             @if($systemAccess)
                 <p class="nav-section-label">Administration</p>
                 @foreach(['system.dashboard' => ['chart-no-axes-combined','Dashboard'], 'system.applications' => ['files','Applications'], 'institutions.index' => ['building-2','Institutions'], 'system.users' => ['users','Users'], 'system.roles' => ['shield-check','Roles & permissions'], 'system.audit' => ['history','Activity logs'], 'system.settings' => ['settings-2','Settings']] as $route => [$icon, $label])
                     <x-ui.nav-item :href="route($route)" :icon="$icon" :label="$label" :active="request()->routeIs($route) || ($route === 'system.applications' && request()->routeIs('system.applications.*')) || ($route === 'system.roles' && request()->routeIs('system.roles.*', 'system.permissions.*')) || ($route === 'institutions.index' && request()->routeIs('institutions.*'))" />
                 @endforeach
+                <x-ui.nav-item :href="route('ai.management')" icon="sparkles" label="AI Management" :active="request()->routeIs('ai.management')" />
             @endif
-            @if($institution)
+            @if($institution && !$systemAccess)
                 <p class="nav-section-label">Institution</p>
                 <x-ui.nav-item :href="route('institution.workspace', $institution)" icon="school" label="Institution workspace" :active="request()->routeIs('institution.workspace')" />
                 @foreach(['institution.profile' => ['institutions.edit','building-2','Institution profile'], 'members.view' => ['members.index','users','Members'], 'audit.view' => ['institution.audit','history','Institution activity']] as $permission => [$route, $icon, $label])
@@ -41,9 +43,16 @@
             @elseif(!$systemAccess)
                 @foreach($workspaceMemberships as $workspaceMember)<x-ui.nav-item :href="route('institution.workspace', $workspaceMember->institution)" icon="school" :label="$workspaceMember->institution->name" />@endforeach
             @endif
+            @php($intelligenceContext = $institution ?? $workspaceMemberships->first(fn ($member) => \App\Support\IntelligenceAccess::canEnter($identity,$member->institution))?->institution)
+            @if(\App\Support\IntelligenceAccess::platform($identity) || ($intelligenceContext && \App\Support\IntelligenceAccess::canEnter($identity,$intelligenceContext)))
+            <p class="nav-section-label">Intelligence</p>
+            <x-ui.nav-item :href="route('intelligence.index',['institution_id'=>$systemAccess?null:$intelligenceContext?->id])" icon="chart-no-axes-combined" label="Analytics & impact" :active="request()->routeIs('intelligence.*')" />
+            @if($intelligenceContext && \App\Support\IntelligenceAccess::kpi($identity,$intelligenceContext->id,'kpis.view'))<x-ui.nav-item :href="route('kpis.index',$intelligenceContext)" icon="shield-check" label="KPI scorecard" :active="request()->routeIs('kpis.*')" />@endif
+            @if($systemAccess ? \App\Support\IntelligenceAccess::platform($identity,'reports.generate_platform') : \App\Support\IntelligenceAccess::institution($identity,$intelligenceContext,'reports.generate'))<x-ui.nav-item :href="route('reports.index',['institution_id'=>$systemAccess?null:$intelligenceContext?->id])" icon="files" label="Report Centre" :active="request()->routeIs('reports.*')" />@endif
+            @endif
             <p class="nav-section-label">Opportunities & support</p>
-            <x-ui.nav-item :href="route('opportunities.index')" icon="graduation-cap" label="Opportunities Hub" :active="request()->routeIs('opportunities.*','opportunity-analytics.*')" />
-            <x-ui.nav-item :href="route('opportunity-applications.index')" icon="files" label="Opportunity applications" :active="request()->routeIs('opportunity-applications.*')" />
+            <x-ui.nav-item :href="route('opportunities.index',$systemAccess?['manage'=>1]:[])" icon="graduation-cap" label="Opportunities Hub" :active="request()->routeIs('opportunities.*','opportunity-analytics.*')" />
+            <x-ui.nav-item :href="route('opportunity-applications.index',$systemAccess?['review'=>1]:[])" icon="files" label="Opportunity applications" :active="request()->routeIs('opportunity-applications.*')" />
             <x-ui.nav-item :href="route('sponsorships.index')" icon="users" label="Project support" :active="request()->routeIs('sponsorships.*')" />
             <p class="nav-section-label">Account</p>
             <x-ui.nav-item :href="route('notifications.index')" icon="bell" label="Notifications" :active="request()->routeIs('notifications.*')" />
@@ -54,7 +63,7 @@
     </aside>
     <div class="workspace-body">
         <header class="workspace-header app-topbar">
-            <div class="topbar-leading"><button type="button" class="icon-button" data-sidebar-toggle aria-label="Toggle navigation" aria-controls="app-sidebar" aria-expanded="true" hidden><x-ui.icon name="panel-left" /></button><div class="topbar-location"><span>{{ $institution?->name ?? 'Ideyra workspace' }}</span><strong>{{ $title }}</strong></div></div>
+            <div class="topbar-leading"><button type="button" class="icon-button" data-sidebar-toggle aria-label="Toggle navigation" aria-controls="app-sidebar" aria-expanded="true" hidden><x-ui.icon name="panel-left" /></button><div class="topbar-location"><span>{{ $institution?->name ?? ($systemAccess ? 'Platform administration' : 'Ideyra workspace') }}</span><strong>{{ $title }}</strong></div></div>
             <div class="topbar-actions">
                 @if($systemAccess)<a class="icon-button topbar-search" href="{{ route('system.applications') }}#application-search" aria-label="Search applications" title="Search applications"><x-ui.icon name="search" /></a>@endif
                 <a class="icon-button notification-bell" href="{{ route('notifications.index') }}" aria-label="Notifications{{ $unreadCount ? ', '.$unreadCount.' unread' : '' }}" title="Notifications"><x-ui.icon name="bell" />@if($unreadCount)<span class="notification-count">{{ $unreadCount > 99 ? '99+' : $unreadCount }}</span>@endif</a>
@@ -68,7 +77,7 @@
                 </details>
             </div>
         </header>
-        <main id="main" class="workspace-content"><div class="workspace-page-header"><div><p class="breadcrumbs"><a href="{{ $systemAccess ? route('system.dashboard') : route('dashboard') }}">Workspace</a><x-ui.icon name="chevron-right" /><span>{{ $title }}</span></p><h1>{{ $title }}</h1>@if($institution)<p>{{ $institution->name }}</p>@endif</div><span class="role-chip"><x-ui.icon name="shield-check" />{{ $currentRole }}</span></div>
+        <main id="main" class="workspace-content"><div class="workspace-page-header"><div><p class="breadcrumbs"><a href="{{ $systemAccess ? route('system.dashboard') : route('dashboard') }}">{{ $systemAccess ? 'Administration' : 'Workspace' }}</a><x-ui.icon name="chevron-right" /><span>{{ $title }}</span></p><h1>{{ $title }}</h1>@if($institution)<p>{{ $institution->name }}</p>@endif</div><span class="role-chip"><x-ui.icon name="shield-check" />{{ $currentRole }}</span></div>
             @if(session('status'))<x-ui.alert>{{ session('status') }}</x-ui.alert>@endif<x-form-errors />{{ $slot }}
         </main>
         <footer class="admin-footer"><span>© {{ config('ideyra.copyright_year') }} Ideyra</span><span>Imagine. Build. Achieve.</span></footer>

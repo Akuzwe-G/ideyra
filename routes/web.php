@@ -12,6 +12,8 @@ use App\Http\Controllers\FoundationController;
 use App\Http\Controllers\IdeaController;
 use App\Http\Controllers\IdentityController;
 use App\Http\Controllers\InstitutionController;
+use App\Http\Controllers\IntelligenceController;
+use App\Http\Controllers\KpiController;
 use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OpportunityApplicationController;
@@ -20,6 +22,7 @@ use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectGroupController;
 use App\Http\Controllers\ProjectWorkController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SponsorshipController;
 use App\Http\Controllers\SystemController;
 use App\Http\Controllers\VerificationController;
@@ -178,6 +181,30 @@ Route::post('/p/{slug}/contact', [PortfolioController::class, 'contact'])->middl
 Route::get('/p/{slug}/photo', [PortfolioController::class, 'photo'])->name('portfolio.photo');
 Route::get('/p/{slug}/media/{media}', [PortfolioController::class, 'media'])->name('portfolio.media');
 Route::get('/v/{reference}', [VerificationController::class, 'publicReference'])->name('verification.public');
+
+Route::middleware('auth')->group(function (): void {
+    Route::get('/intelligence', [IntelligenceController::class, 'index'])->name('intelligence.index');
+    Route::get('/intelligence/records/{type}', [IntelligenceController::class, 'records'])->name('intelligence.records');
+    Route::get('/intelligence/charts/{chart}/csv', [IntelligenceController::class, 'csv'])->name('intelligence.csv');
+    Route::get('/intelligence/institutions/{institution}/kpis', [KpiController::class, 'index'])->name('kpis.index');
+    Route::get('/intelligence/institutions/{institution}/kpis/create', [KpiController::class, 'form'])->name('kpis.create');
+    Route::get('/intelligence/institutions/{institution}/kpis/{kpi}/edit', [KpiController::class, 'form'])->name('kpis.edit');
+    Route::post('/intelligence/institutions/{institution}/kpis/{kpi?}', [KpiController::class, 'save'])->name('kpis.save');
+    Route::post('/intelligence/institutions/{institution}/kpi-policy', [KpiController::class, 'policy'])->name('kpis.policy');
+    Route::post('/intelligence/kpis/{kpi}/actions', [KpiController::class, 'action'])->name('kpis.action');
+    Route::post('/intelligence/kpi-changes/{change}', [KpiController::class, 'decide'])->name('kpis.decide');
+    Route::post('/intelligence/kpis/{kpi}/observations', [KpiController::class, 'observe'])->name('kpis.observe');
+    Route::get('/intelligence/kpi-observations/{observation}/evidence', [KpiController::class, 'evidence'])->name('kpis.evidence');
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/preview', [ReportController::class, 'preview'])->name('reports.preview');
+    Route::post('/reports', [ReportController::class, 'generate'])->middleware('throttle:20,1,reports:')->name('reports.generate');
+    Route::get('/reports/history', [ReportController::class, 'history'])->name('reports.history');
+    Route::get('/reports/schedules', [ReportController::class, 'schedules'])->name('reports.schedules');
+    Route::post('/reports/schedules', [ReportController::class, 'schedule'])->name('reports.schedule');
+    Route::patch('/reports/schedules/{schedule}', [ReportController::class, 'toggle'])->name('reports.schedule.toggle');
+    Route::get('/reports/{run}/download', [ReportController::class, 'download'])->name('reports.download');
+    Route::get('/reports/{run}', [ReportController::class, 'show'])->name('reports.show');
+});
 
 Route::middleware('auth')->group(function (): void {
     Route::get('/ai', [AiController::class, 'index'])->name('ai.index');

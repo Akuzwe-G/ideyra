@@ -1,0 +1,45 @@
+.intelligence-intro { display:flex; align-items:center; justify-content:space-between; gap:1.5rem; margin:1.5rem 0; }
+.intelligence-intro h2 { margin:.4rem 0; font-size:1.35rem; }
+.intelligence-intro p { max-width:70ch; }
+.intelligence-tabs { display:flex; flex-wrap:wrap; gap:.5rem; margin:1.5rem 0; }
+.intelligence-tabs a { padding:.6rem .85rem; border:1px solid var(--line); border-radius:.6rem; background:var(--surface); font-size:.75rem; color:var(--text); text-decoration:none; }
+.intelligence-tabs a[aria-current],.intelligence-tabs a:hover { border-color:var(--action); background:var(--canvas); }
+.intelligence-filter-note { grid-column:1/-1; margin:0; font-size:.72rem; color:var(--muted); line-height:1.7; }
+.intelligence-advanced { grid-column:1/-1; border-top:1px solid var(--line); padding-top:.5rem; }
+.intelligence-advanced summary { cursor:pointer; font-size:.8rem; padding:.6rem 0; font-weight:600; }
+.intelligence-advanced-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr)); gap:1rem; padding-top:.8rem; }
+.intelligence-meta { font-size:.72rem; color:var(--muted); margin:1rem 0 1.5rem; }
+.intelligence-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1rem; margin:1.5rem 0; }
+.intelligence-metric { padding:1.1rem; border-top:3px solid #087f8c; min-width:0; }
+.intelligence-metric>p { font-size:.75rem; margin:0 0 .6rem; }
+.intelligence-metric strong { display:block; font-size:1.65rem; overflow-wrap:anywhere; font-variant-numeric:tabular-nums; line-height:1.4; }
+.intelligence-metric span,.intelligence-metric details { font-size:.7rem; color:var(--muted); }
+.intelligence-metric details { margin-top:.6rem; }
+.intelligence-data { margin-top:1rem; font-size:.75rem; }
+.intelligence-data summary, .intelligence-scorecard summary, .intelligence-report-preview summary { cursor:pointer; padding:.7rem 0; font-weight:600; }
+.intelligence-notice { border-left:3px solid #087f8c; padding:.8rem; background:var(--canvas); font-size:.75rem; }
+.intelligence-quality { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; }
+.intelligence-quality article { border:1px solid var(--line); border-radius:.7rem; padding:1rem; }
+.intelligence-quality span { display:block; font-size:1.6rem; font-weight:600; margin:.5rem 0; }
+.intelligence-scorecards { display:grid; gap:1.2rem; margin:1.5rem 0; }
+.intelligence-score { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:1rem; padding:1rem; border-radius:.7rem; background:var(--canvas); }
+.intelligence-score dt { font-size:.7rem; color:var(--muted); }
+.intelligence-score dd { margin:.5rem 0 0; font-weight:600; font-size:.9rem; }
+.intelligence-progress { display:block; width:100%; height:.65rem; margin:1rem 0; accent-color:#087f8c; }
+.intelligence-form { display:grid; gap:1rem; max-width:100%; margin:1.25rem 0; }
+.intelligence-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; }
+.intelligence-form label { display:grid; gap:.5rem; font-size:.8rem; min-width:0; }
+.intelligence-form :is(input:not([type=checkbox]),select,textarea) { box-sizing:border-box; width:100%; min-height:44px; border:1px solid var(--line); border-radius:.6rem; background:var(--surface); color:var(--text); padding:.75rem; font:inherit; }
+.intelligence-form textarea { min-height:90px; resize:vertical; }
+.intelligence-form select[multiple] { min-height:130px; }
+.intelligence-form .check-row { display:flex; align-items:center; gap:.75rem; }
+.intelligence-form .check-row input { flex-shrink:0; width:18px; height:18px; }
+.intelligence-form>.button { justify-self:start; }
+.intelligence-history { border-left:3px solid var(--line); padding:1rem; margin:1rem 0; }
+.intelligence-report-preview table td { font-size:.75rem; white-space:normal; }
+.intelligence-report-preview dd { margin-bottom:.5rem; overflow-wrap:anywhere; }
+.table-scroll { max-width:100%; overflow-x:auto; }
+.table-scroll table caption { text-align:left; padding:.75rem 0; font-weight:600; }
+@media(max-width:1100px) { .intelligence-kpis{grid-template-columns:repeat(3,minmax(0,1fr))} .intelligence-score{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media(max-width:700px) { .intelligence-intro{align-items:flex-start;flex-direction:column} .intelligence-kpis,.intelligence-quality,.intelligence-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))} .intelligence-score{grid-template-columns:repeat(2,minmax(0,1fr))} .intelligence-metric strong{font-size:1.3rem} }
+@media(max-width:420px) { .intelligence-form-grid,.intelligence-quality{grid-template-columns:1fr} .intelligence-tabs a{font-size:.7rem;padding:.5rem} }

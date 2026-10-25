@@ -37,18 +37,24 @@ function render() {
         const values = config.values.slice(0, labels.length);
         const doughnut = config.type === 'doughnut';
         const bar = config.type === 'bar';
-        const total = values.reduce((sum, value) => sum + value, 0);
+        const total = values.reduce((sum, value) => sum + (value ?? 0), 0);
+        const drilldown = index => {
+            if (!config.links?.[index]) return;
+            const target = new URL(config.links[index], location.origin);
+            if (target.origin === location.origin) location.assign(target.href);
+        };
         const chart = new Chart(canvas, {
             type: config.type,
             data: { labels, datasets: [{ label: config.unit, data: values, backgroundColor: doughnut ? colors : colors[0], borderColor: doughnut ? (dark ? '#192741' : '#FFFFFF') : colors[0], borderWidth: doughnut ? 3 : 2, borderRadius: bar ? 4 : 0, pointRadius: 2, pointHoverRadius: 5, tension: 0.15 }] },
             plugins: [background],
             options: {
                 responsive: true, maintainAspectRatio: false, animation: false,
+                onClick: (_event, elements) => { if (elements.length) drilldown(elements[0].index); },
                 indexAxis: bar ? 'y' : 'x',
                 interaction: { mode: 'nearest', intersect: false },
                 plugins: {
                     legend: { display: !doughnut, position: 'bottom', labels: { color: text, boxWidth: 12, font: { family: 'Montserrat' } } },
-                    tooltip: { callbacks: { label: context => `${config.unit}: ${context.raw}${doughnut ? ` (${(context.raw / total * 100).toFixed(1)}%)` : ''}` } },
+                    tooltip: { callbacks: { label: context => `${config.unit}: ${context.raw ?? 'Protected / unavailable'}${doughnut && total > 0 ? ` (${(context.raw / total * 100).toFixed(1)}%)` : ''}` } },
                 },
                 ...(doughnut ? { cutout: '68%' } : { scales: {
                     x: { title: { display: true, text: bar ? config.unit : 'Period starting', color: text }, grid: { color: grid }, ticks: { color: text, ...(bar ? { precision: 0 } : { maxTicksLimit: 6, maxRotation: 0 }) }, beginAtZero: bar },
@@ -63,7 +69,7 @@ function render() {
         if (doughnut) labels.forEach((label, index) => {
             const button = document.createElement('button');
             button.type = 'button';
-            button.textContent = `${label}: ${values[index]} (${(values[index] / total * 100).toFixed(1)}%)`;
+            button.textContent = `${label}: ${values[index] ?? 'Protected / unavailable'}${total > 0 ? ` (${(values[index] / total * 100).toFixed(1)}%)` : ''}`;
             button.style.setProperty('--legend-color', colors[index % colors.length]);
             button.setAttribute('aria-pressed', 'true');
             button.addEventListener('click', () => {
@@ -75,6 +81,7 @@ function render() {
         });
         let active = -1;
         canvas.onkeydown = event => {
+            if (event.key === 'Enter' && active >= 0) { drilldown(active); return; }
             if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Escape'].includes(event.key)) return;
             event.preventDefault();
             active = event.key === 'Escape' ? -1 : (active + (['ArrowLeft', 'ArrowUp'].includes(event.key) ? -1 : 1) + labels.length) % labels.length;
@@ -98,7 +105,7 @@ function render() {
 }
 
 document.addEventListener('ideyra:themechange', render);
-root.querySelector('form').addEventListener('submit', () => {
+root.querySelector('form')?.addEventListener('submit', () => {
     root.setAttribute('aria-busy', 'true');
     const button = root.querySelector('[type=submit]');
     button.textContent = 'Updating analytics…';

@@ -35,7 +35,7 @@ class AdminBootstrapTest extends TestCase
         $this->assertSame('platform', $role->scope);
         $this->assertContains('system.institutions', $role->permissions);
         $this->assertContains('system.applications', $role->permissions);
-        $this->post(route('login.store'), ['email' => $credentials['email'], 'password' => $credentials['password']])->assertRedirect(route('dashboard'));
+        $this->post(route('login.store'), ['email' => $credentials['email'], 'password' => $credentials['password']])->assertRedirect(route('system.dashboard'));
         $this->assertAuthenticatedAs($user);
         foreach (['system.dashboard', 'institutions.index', 'institutions.create', 'system.applications'] as $route) {
             $this->get(route($route))->assertOk();

@@ -5,7 +5,7 @@ async function login(page, email = 'system@browser.example.test') {
     await page.getByLabel('Email', { exact: true }).fill(email);
     await page.getByLabel('Password', { exact: true }).fill(process.env.IDEYRA_BROWSER_PASSWORD);
     await page.getByRole('button', { name: 'Log In', exact: true }).click();
-    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page).toHaveURL(email === 'system@browser.example.test' ? /\/system$/ : /\/dashboard$/);
 }
 
 test('login fits common screens vertically and supports password visibility', async ({ page }) => {
@@ -33,16 +33,12 @@ test('desktop shell collapses with real icons and persists one theme across page
     await login(page);
     for (const width of [1440, 768, 390]) {
         await page.setViewportSize({ width, height: 1000 });
-        const layout = await page.locator('.personal-workspace-intro').evaluate(section => {
-            const welcome = section.querySelector('.page-toolbar').getBoundingClientRect();
-            const shortcuts = section.querySelector('.personal-workspace-actions').getBoundingClientRect();
-            const following = section.nextElementSibling.getBoundingClientRect();
-            return { welcomeGap: shortcuts.top - welcome.bottom, followingGap: following.top - shortcuts.bottom, overflow: document.documentElement.scrollWidth > innerWidth };
-        });
-        expect(layout.welcomeGap).toBeGreaterThanOrEqual(16);
-        expect(layout.followingGap).toBeGreaterThanOrEqual(16);
-        expect(layout.overflow).toBe(false);
-        await page.screenshot({ path: 'storage/app/personal-workspace-spacing-' + width + '.png', fullPage: false });
+        await expect(page.getByRole('heading',{name:'System Administration',exact:true})).toBeVisible();
+        await expect(page.locator('.app-navigation .nav-item').first()).toContainText('Dashboard');
+        await expect(page.locator('.app-navigation')).not.toContainText('Personal workspace');
+        await expect(page.locator('.app-navigation')).not.toContainText('Idea Vault');
+        expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
+        await page.screenshot({ path: 'storage/app/administration-dashboard-' + width + '.png', fullPage: false });
     }
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto('/system');
@@ -130,5 +126,51 @@ test('review confirmation, notification read state and profile picture updates w
     await page.getByLabel('Remove my current picture', { exact: true }).check();
     await page.getByRole('button', { name: 'Save my profile', exact: true }).click();
     await expect(page.locator('.profile-overview .user-avatar img')).toHaveCount(0);
+    expect(errors).toEqual([]);
+});
+
+test('search and filter controls share the brand design across roles, themes and screen widths', async ({page})=>{
+    test.setTimeout(240000);
+    const errors=[];page.on('pageerror',error=>errors.push(error.message));
+    await login(page,'student@browser.example.test');
+    const inspectFilters=async(paths)=>{
+        for(const width of [1440,768,390]) {
+            await page.setViewportSize({width,height:1000});
+            for(const path of paths) {
+                await page.goto(path);
+                const form=page.locator('form.innovation-filters, form.filter-grid, form.inline-search').first();
+                await expect(form).toBeVisible();
+                const controls=await form.locator('input:not([type=hidden]):not([type=checkbox]),select').evaluateAll(nodes=>nodes.map(node=>{
+                    const style=getComputedStyle(node);const rect=node.getBoundingClientRect();
+                    return {height:rect.height,border:style.borderTopWidth,radius:parseFloat(style.borderRadius),background:style.backgroundColor,search:node.name==='q',dropdown:node.tagName==='SELECT',start:parseFloat(style.paddingInlineStart),end:parseFloat(style.paddingInlineEnd)};
+                }));
+                expect(controls.length).toBeGreaterThan(0);
+                for(const control of controls) {
+                    expect(control.height,path).toBe(44);
+                    expect(control.border,path).toBe('1px');
+                    expect(control.radius,path).toBeGreaterThanOrEqual(6);
+                    if(control.search) expect(control.start,path).toBeGreaterThanOrEqual(32);
+                    if(control.dropdown) expect(control.end,path).toBeGreaterThanOrEqual(30);
+                }
+                expect(new Set(controls.map(control=>control.background)).size).toBe(1);
+                expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),path).toBe(true);
+                if(path==='/ideas'||path==='/projects'||path==='/groups'||path==='/system/applications')
+                    await page.screenshot({path:'storage/app/filter-design-'+path.replaceAll('/','-')+'-'+width+'.png'});
+            }
+        }
+    };
+    await inspectFilters(['/ideas','/groups','/projects','/opportunities','/career/cvs','/career?tab=skill','/sponsorships','/opportunity-applications']);
+    await page.goto('/ideas');
+    await page.getByLabel('Search ideas',{exact:true}).fill('Design review filter');
+    await page.locator('form.innovation-filters').getByRole('button',{name:'Search',exact:true}).click();
+    await expect(page).toHaveURL(/q=Design(?:\+|%20)review(?:\+|%20)filter/);
+    await expect(page.getByLabel('Search ideas',{exact:true})).toHaveValue('Design review filter');
+    await page.getByRole('button',{name:'Switch to dark mode',exact:true}).click();
+    await inspectFilters(['/ideas']);
+    await page.locator('[data-profile-menu]>summary').click();
+    await page.getByRole('button',{name:'Log out',exact:true}).click();
+    await login(page,'system@browser.example.test');
+    await expect(page.locator('.app-navigation .nav-item').first()).toContainText('Dashboard');
+    await inspectFilters(['/system/applications','/system/users','/system/institutions']);
     expect(errors).toEqual([]);
 });

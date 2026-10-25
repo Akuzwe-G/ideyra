@@ -42,6 +42,6 @@ class Idea extends Model
 
     protected function casts(): array
     {
-        return ['tags' => 'array'];
+        return ['tags' => 'array', 'first_submitted_at' => 'datetime'];
     }
 }

@@ -29,5 +29,6 @@ class RolePermissionSeeder extends Seeder
         $this->call(PhaseTwoPermissionSeeder::class);
         $this->call(PhaseThreeSeeder::class);
         $this->call(PhaseFourSeeder::class);
+        $this->call(PhaseSixSeeder::class);
     }
 }

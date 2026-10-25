@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Institution;
 use App\Models\JoinApplication;
+use App\Models\ReportRun;
 use App\Support\InnovationAccess;
 use App\Support\InstitutionAccess;
 use App\Support\OpportunityAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class NotificationController extends Controller
@@ -40,6 +42,14 @@ class NotificationController extends Controller
     public function open(Request $request, string $notification): RedirectResponse
     {
         $data = $request->user()->notifications()->whereKey($notification)->firstOrFail()->data;
+        if (($data['target'] ?? null) === 'report') {
+            $run = ReportRun::find($data['subject_id'] ?? 0);
+            if ($run && Gate::allows('view', $run)) {
+                return redirect()->route('reports.show', $run);
+            }
+
+            return redirect()->route('notifications.index')->with('status', 'This report is no longer available within your current access.');
+        }
         if (($data['target'] ?? null) === 'career_portfolio') {
             return redirect()->route('career.portfolio');
         }

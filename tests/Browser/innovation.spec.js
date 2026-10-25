@@ -6,7 +6,7 @@ async function login(page, email='student@browser.example.test') {
     await page.getByLabel('Email', { exact:true }).fill(email);
     await page.getByLabel('Password', { exact:true }).fill(process.env.IDEYRA_BROWSER_PASSWORD);
     await page.getByRole('button', { name:'Log In', exact:true }).click();
-    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page).toHaveURL(email === 'system@browser.example.test' ? /\/system$/ : /\/dashboard$/);
 }
 test('student captures a private idea and manages a linked project, task, board and analytics', async ({page}) => {
     test.setTimeout(180000);

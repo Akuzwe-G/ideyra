@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
+use App\Support\InstitutionAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +17,12 @@ class AuthController extends Controller
             throw ValidationException::withMessages(['email' => 'These credentials do not match our records.']);
         }
         $request->session()->regenerate();
+
+        if (InstitutionAccess::system($request->user())) {
+            $request->session()->forget('url.intended');
+
+            return redirect()->route('system.dashboard');
+        }
 
         return redirect()->intended(route('dashboard'));
     }

@@ -112,6 +112,14 @@ class OpportunityController extends Controller
         $questions = DB::table('opportunity_questions')->where('opportunity_id', $opportunity->id)->orderBy('sort_order')->get();
         $bookmarked = DB::table('opportunity_bookmarks')->where('opportunity_id', $opportunity->id)->where('user_id', auth()->id())->exists();
         $memberships = InnovationAccess::memberships(auth()->user());
+        foreach ($memberships as $member) {
+            if ($member->role->name === 'Student' && (! $opportunity->institution_id || $opportunity->institution_id === $member->institution_id) && OpportunityAccess::eligible($opportunity, auth()->user(), $member->institution_id)) {
+                DB::table('institution_opportunity_visits')->insertOrIgnore([
+                    'institution_id' => $member->institution_id, 'user_id' => auth()->id(), 'opportunity_id' => $opportunity->id,
+                    'visited_on' => today(config('intelligence.timezone'))->toDateString(), 'created_at' => now(),
+                ]);
+            }
+        }
         $eligibleMemberships = $memberships->filter(fn ($m) => OpportunityAccess::eligible($opportunity, auth()->user(), $m->institution_id));
         $decisions = Gate::allows('update', $opportunity) || OpportunityAccess::manages($opportunity, auth()->user(), 'opportunities.approve') ? DB::table('opportunity_decisions')->where('opportunity_id', $opportunity->id)->latest('id')->get() : collect();
         $managers = $opportunity->institution_id && OpportunityAccess::manages($opportunity, auth()->user()) ? $opportunity->institution->memberships()->with('user')->where('status', 'active')->get()->filter(fn ($m) => OpportunityAccess::permission($opportunity, 'opportunities.manage', $m->user)) : collect();

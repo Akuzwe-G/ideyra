@@ -1,6 +1,6 @@
 <x-layouts.admin title="System Administration">
-<p><a class="button button-secondary" href="{{ route('ai.activity',['scope'=>'system']) }}"><x-ui.icon name="sparkles" />AI analytics & quotas</a><a class="button button-secondary" href="{{ route('ai.management') }}">AI Management</a></p>
-<div class="page-toolbar"><div><h2>Your platform, at a glance</h2><p>A clear view of institution onboarding, application review and the people joining Ideyra.</p></div><a class="button button-secondary" href="{{ route('system.audit') }}"><x-ui.icon name="history" />Activity logs</a></div>
+@if(\App\Support\IntelligenceAccess::platform(auth()->user()))<div class="button-row"><a class="button button-secondary" href="{{ route('intelligence.index') }}">Institutional intelligence & impact</a><a class="button button-secondary" href="{{ route('reports.index') }}">Report Centre</a></div>@endif
+<div class="page-toolbar"><div><h2>Your platform, at a glance</h2><p>A clear view of institution onboarding, application review and the people joining Ideyra.</p></div><div class="button-row"><a class="button button-secondary" href="{{ route('ai.activity',['scope'=>'system']) }}"><x-ui.icon name="sparkles" />AI analytics & quotas</a><a class="button button-secondary" href="{{ route('system.audit') }}"><x-ui.icon name="history" />Activity logs</a></div></div>
 <p class="eyebrow">PLATFORM TOTALS · ALL TIME</p>
 <div class="overview-grid">
 @foreach($totals as $label => $count)

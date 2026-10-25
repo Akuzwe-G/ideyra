@@ -29,8 +29,11 @@ use Throwable;
 
 class IdentityController extends Controller
 {
-    public function dashboard(Request $request, DashboardAnalytics $analytics): View
+    public function dashboard(Request $request, DashboardAnalytics $analytics): View|RedirectResponse
     {
+        if (InstitutionAccess::system($request->user())) {
+            return redirect()->route('system.dashboard');
+        }
         $memberships = auth()->user()->memberships()->with('institution', 'role')->where('status', 'active')->whereHas('institution', fn ($query) => $query->where('status', 'active'))->get();
 
         $filters = $analytics->filters($request);

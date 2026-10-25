@@ -17,7 +17,7 @@ class PrivateResponse
     {
         $response = $next($request);
         $response->headers->set('Cache-Control', 'private, no-store, max-age=0');
-        if ($request->is('ai', 'ai/*', 'career', 'career/*', 'v/*', 'dashboard', 'login', 'profile', 'profile/*', 'notifications', 'notifications/*', 'system', 'system/*', 'institutions/*', 'applications/*', 'activate/*', 'forgot-password', 'reset-password*', 'apply/*', 'preview/*')) {
+        if ($request->is('intelligence', 'intelligence/*', 'reports', 'reports/*', 'ai', 'ai/*', 'career', 'career/*', 'v/*', 'dashboard', 'login', 'profile', 'profile/*', 'notifications', 'notifications/*', 'system', 'system/*', 'institutions/*', 'applications/*', 'activate/*', 'forgot-password', 'reset-password*', 'apply/*', 'preview/*')) {
             $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
         }
         $response->headers->set('Referrer-Policy', 'no-referrer');

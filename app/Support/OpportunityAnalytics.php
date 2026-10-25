@@ -99,11 +99,14 @@ class OpportunityAnalytics
         return ['charts' => $charts, 'kpis' => $kpis, 'rates' => ['accepted' => (int) ($counts['accepted'] ?? 0), 'decided' => $decided, 'unique_participants' => $uniqueStudents, 'active_students' => $activeStudents, 'active_participants' => $activeParticipants], 'hasData' => (clone $catalog)->exists() || (clone $applications)->exists() || (clone $requests)->exists(), 'recentApplications' => collect(), 'recentInstitutions' => collect(), 'activities' => collect()];
     }
 
-    private function availableToMembers(Institution $institution): Builder
+    public function availableToMembers(Institution $institution, ?\Illuminate\Database\Query\Builder $studentIds = null): Builder
     {
         $members = DB::table('memberships as m')->join('users as u', 'u.id', '=', 'm.user_id')->join('roles as r', 'r.id', '=', 'm.role_id')->where('m.institution_id', $institution->id)->where('m.status', 'active')->where('u.status', 'active')
             ->whereNotExists(fn ($deny) => $deny->selectRaw('1')->from('membership_permissions as override')->join('permissions as permission', 'permission.id', '=', 'override.permission_id')->whereColumn('override.membership_id', 'm.id')->where('permission.name', 'opportunities.view')->where('override.allowed', false))
             ->where(fn ($grants) => $grants->whereJsonContains('r.permissions', 'opportunities.view')->orWhereExists(fn ($allow) => $allow->selectRaw('1')->from('membership_permissions as override')->join('permissions as permission', 'permission.id', '=', 'override.permission_id')->whereColumn('override.membership_id', 'm.id')->where('permission.name', 'opportunities.view')->where('override.allowed', true)));
+        if ($studentIds) {
+            $members->whereIn('m.user_id', $studentIds);
+        }
         $classes = DB::table('class_assignments as a')->join('academic_classes as c', 'c.id', '=', 'a.academic_class_id')->whereIn('a.membership_id', (clone $members)->select('m.id'));
         $targets = ['role' => (clone $members)->select('m.role_id'), 'class' => (clone $classes)->select('c.id'), 'programme' => (clone $classes)->select('c.programme_id'), 'academic_year' => (clone $classes)->select('c.academic_year_id'), 'intake' => (clone $classes)->select('c.intake_id'), 'group' => DB::table('group_members')->whereIn('membership_id', (clone $members)->select('m.id'))->select('group_id')];
 

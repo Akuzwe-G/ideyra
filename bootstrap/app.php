@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\ActiveAccount;
 use App\Http\Middleware\PrivateResponse;
+use App\Support\InstitutionAccess;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->redirectUsersTo(fn (Request $request) => InstitutionAccess::system($request->user())
+            ? route('system.dashboard') : route('dashboard'));
         $middleware->web(append: [PrivateResponse::class, ActiveAccount::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

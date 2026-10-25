@@ -97,7 +97,7 @@ class IdeaWorkflow
         DB::transaction(function () use ($idea, $reviewerId): void {
             $locked = Idea::whereKey($idea->id)->lockForUpdate()->firstOrFail();
             abort_unless(in_array($locked->status, ['draft', 'developing', 'returned'], true), 422);
-            $locked->update(['status' => 'submitted', 'visibility' => 'institutional', 'reviewer_id' => $reviewerId]);
+            $locked->update(['status' => 'submitted', 'visibility' => 'institutional', 'reviewer_id' => $reviewerId, 'first_submitted_at' => $locked->first_submitted_at ?? now()]);
         });
     }
 
