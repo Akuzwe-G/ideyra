@@ -50,6 +50,12 @@
             @if($intelligenceContext && \App\Support\IntelligenceAccess::kpi($identity,$intelligenceContext->id,'kpis.view'))<x-ui.nav-item :href="route('kpis.index',$intelligenceContext)" icon="shield-check" label="KPI scorecard" :active="request()->routeIs('kpis.*')" />@endif
             @if($systemAccess ? \App\Support\IntelligenceAccess::platform($identity,'reports.generate_platform') : \App\Support\IntelligenceAccess::institution($identity,$intelligenceContext,'reports.generate'))<x-ui.nav-item :href="route('reports.index',['institution_id'=>$systemAccess?null:$intelligenceContext?->id])" icon="files" label="Report Centre" :active="request()->routeIs('reports.*')" />@endif
             @endif
+            <p class="nav-section-label">Innovation network</p>
+            <x-ui.nav-item :href="route('network.showcase')" icon="lightbulb" label="Innovation Showcase" :active="request()->routeIs('network.showcase*','network.publications*')" />
+            <x-ui.nav-item :href="route('network.challenges')" icon="graduation-cap" label="Innovation Challenges" :active="request()->routeIs('network.challenges*','network.submissions*','network.judges')" />
+            <x-ui.nav-item :href="route('network.events')" icon="calendar-days" label="Events & Exhibitions" :active="request()->routeIs('network.events*')" />
+            @unless($systemAccess)<x-ui.nav-item :href="route('network.workspaces')" icon="users" label="Shared collaborations" :active="request()->routeIs('network.workspaces*','network.requests*')" />@endunless
+            @if(\App\Support\NetworkAccess::platform($identity) || $workspaceMemberships->contains(fn($m)=>\App\Support\NetworkAccess::can($identity,$m->institution,'moderation.review')))<x-ui.nav-item :href="route('network.moderation')" icon="shield-check" label="Innovation moderation" :active="request()->routeIs('network.moderation*')" />@endif
             <p class="nav-section-label">Opportunities & support</p>
             <x-ui.nav-item :href="route('opportunities.index',$systemAccess?['manage'=>1]:[])" icon="graduation-cap" label="Opportunities Hub" :active="request()->routeIs('opportunities.*','opportunity-analytics.*')" />
             <x-ui.nav-item :href="route('opportunity-applications.index',$systemAccess?['review'=>1]:[])" icon="files" label="Opportunity applications" :active="request()->routeIs('opportunity-applications.*')" />

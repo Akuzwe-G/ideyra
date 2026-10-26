@@ -57,6 +57,9 @@ class IntelligenceReports
 
     public function request(User $user, array $filters, string $type, string $format, array $recipients = [], ?ReportSchedule $schedule = null, ?string $scheduledFor = null): ReportRun
     {
+        if ($type === 'network') {
+            $filters['section'] = 'network';
+        }
         abort_unless(array_key_exists($type, config('intelligence.reports')) && in_array($format, ['pdf', 'xlsx', 'csv'], true), 422);
         $filters = app(IntelligenceFilters::class)->normalise($user, $filters);
         $context = app(IntelligenceAccess::class)->context($user, $filters, 'reports.generate');
@@ -78,6 +81,9 @@ class IntelligenceReports
 
     public function preview(User $user, array $filters, string $type): array
     {
+        if ($type === 'network') {
+            $filters['section'] = 'network';
+        }
         abort_unless(array_key_exists($type, config('intelligence.reports')), 422);
         $filters = app(IntelligenceFilters::class)->normalise($user, $filters);
         $context = app(IntelligenceAccess::class)->context($user, $filters, 'reports.generate');

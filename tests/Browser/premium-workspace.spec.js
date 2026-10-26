@@ -51,7 +51,7 @@ test('desktop shell collapses with real icons and persists one theme across page
         expect(spacing.sectionGap).toBeGreaterThanOrEqual(20);
         expect(spacing.headingGap).toBeGreaterThanOrEqual(16);
         expect(spacing.overlap).toBe(false);
-        expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
+        await expect.poll(() => page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
         await page.screenshot({ path: 'storage/app/administration-dashboard-' + width + '.png', fullPage: false });
     }
     await page.setViewportSize({ width: 1440, height: 1000 });

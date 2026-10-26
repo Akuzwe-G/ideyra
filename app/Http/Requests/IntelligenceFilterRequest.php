@@ -25,7 +25,7 @@ class IntelligenceFilterRequest extends FormRequest
             'academic_year_id' => 'nullable|integer|min:1', 'intake_id' => 'nullable|integer|min:1', 'programme_id' => 'nullable|integer|min:1', 'academic_class_id' => 'nullable|integer|min:1', 'project_group_id' => 'nullable|integer|min:1', 'supervisor_id' => 'nullable|integer|min:1',
             'project_category' => 'nullable|string|max:100', 'opportunity_category_id' => 'nullable|integer|min:1',
             'status' => ['nullable', Rule::in(['draft', 'pending_approval', 'approved', 'in_progress', 'on_hold', 'completed', 'cancelled', 'archived'])],
-            'section' => ['nullable', Rule::in(['overview', 'projects', 'participation', 'programmes', 'opportunities', 'career', 'achievements', 'ai', 'quality'])],
+            'section' => ['nullable', Rule::in(['overview', 'projects', 'participation', 'programmes', 'opportunities', 'career', 'achievements', 'ai', 'quality', 'network'])],
         ];
     }
 }

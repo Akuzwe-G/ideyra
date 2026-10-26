@@ -17,6 +17,7 @@ class OpportunityWorkflow
 
     public function save(array $data, ?Opportunity $opportunity = null): Opportunity
     {
+        abort_if($opportunity?->network_type, 422, 'Manage this specialised opportunity through Challenges or Events.');
         $user = auth()->user();
         foreach (['audience', 'eligibility'] as $field) {
             $data[$field] = array_map(fn ($ids) => array_map('intval', $ids), $data[$field] ?? []);
@@ -96,6 +97,7 @@ class OpportunityWorkflow
 
     public function transition(Opportunity $opportunity, string $status, string $reason): void
     {
+        abort_if($opportunity->network_type, 422, 'Use the challenge or event approval workflow.');
         if (in_array($status, ['approved', 'returned', 'rejected'], true)) {
             Gate::authorize('review', $opportunity);
         } elseif (in_array($status, ['published', 'closed', 'archived'], true) || $opportunity->status === 'published') {

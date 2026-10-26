@@ -1,0 +1,131 @@
+import { test, expect } from '@playwright/test';
+const fixtures = JSON.parse(process.env.IDEYRA_BROWSER_FIXTURES);
+async function login(page, email) {
+    await page.goto('/login');
+    await page.getByLabel('Email', { exact: true }).fill(email);
+    await page.getByLabel('Password', { exact: true }).fill(process.env.IDEYRA_BROWSER_PASSWORD);
+    await page.getByRole('button', { name: 'Log In', exact: true }).click();
+    await expect(page).toHaveURL(email.startsWith('system@') ? /\/system$/ : /\/dashboard$/);
+}
+async function decision(page, status) {
+    const details = page.locator('details').filter({ has: page.locator('summary', { hasText: 'Record a workflow decision' }) });
+    await details.locator('summary').click();
+    await details.getByLabel('Next status').selectOption(status);
+    await details.getByLabel('Reason', { exact: true }).fill('Independent review of the explicit audience and approved content.');
+    await details.getByLabel('I confirm this action').check();
+    await details.getByRole('button', { name: 'Record decision', exact: true }).click();
+}
+test('showcase publishes only an independently approved projection and revokes guest URLs', async ({ browser }) => {
+    test.setTimeout(180000);
+    const studentContext = await browser.newContext();
+    const adminContext = await browser.newContext();
+    const guestContext = await browser.newContext();
+    const student = await studentContext.newPage(), admin = await adminContext.newPage(), guest = await guestContext.newPage();
+    const errors = [];
+    for (const page of [student, admin, guest]) page.on('pageerror', error => errors.push(error.message));
+    await login(admin, 'admin@browser.example.test');
+    await admin.goto('/network/institutions/' + fixtures.institution + '/policy');
+    await admin.getByLabel('Allow independently approved public publication').selectOption('1');
+    await admin.getByLabel('Allow controlled cross-institution participation').selectOption('1');
+    await admin.getByLabel('Reason', { exact: true }).fill('Explicit browser fixture institution policy.');
+    await admin.getByLabel('I confirm this action').check();
+    await admin.getByRole('button', { name: 'Save institution policy' }).click();
+    await login(student, 'student@browser.example.test');
+    await student.goto('/projects/create');
+    await student.getByLabel('Project title', { exact: true }).fill('Network browser internal prototype');
+    for (const label of ['Description', 'Problem statement', 'Objectives', 'Expected outcomes']) await student.getByLabel(label, { exact: true }).fill('PRIVATE INTERNAL CONTENT for source project.');
+    await student.getByLabel('Category', { exact: true }).fill('Engineering');
+    await student.getByLabel('I confirm the selected ownership').check();
+    await student.getByRole('button', { name: 'Save project', exact: true }).click();
+    await student.getByRole('link', { name: 'Prepare showcase publication' }).click();
+    await student.getByLabel('Showcase title', { exact: true }).fill('Approved browser water innovation');
+    for (const label of ['Short summary', 'Project overview', 'Problem addressed', 'Proposed solution', 'Objectives']) await student.getByLabel(label, { exact: true }).fill('Explicit approved audience content.');
+    await student.getByLabel('Innovation category', { exact: true }).fill('Engineering');
+    await student.getByLabel('Declared project owner', { exact: true }).fill('Student declaration');
+    await student.getByRole('combobox', { name: 'Approved audience', exact: true }).selectOption('public');
+    await student.getByLabel('I acknowledge the disclosure').check();
+    await student.getByLabel('I authorise this representation').check();
+    await student.getByRole('button', { name: 'Save private review draft' }).click();
+    const editUrl = student.url();
+    const publicationId = editUrl.match(/publications\/(\d+)\/edit/)[1];
+    await decision(student, 'submitted');
+    await admin.goto('/network/publications/' + publicationId + '/review');
+    await decision(admin, 'approved');
+    await admin.goto('/network/publications/' + publicationId + '/review');
+    await decision(admin, 'published');
+    await guest.goto('/showcase');
+    await guest.getByRole('heading').getByRole('link', { name: 'Approved browser water innovation' }).click();
+    const publicUrl = guest.url();
+    await expect(guest.locator('main')).not.toContainText('PRIVATE INTERNAL CONTENT');
+    await expect(guest.locator('main')).toContainText('User-provided declarations');
+    for (const width of [1440, 768, 390]) {
+        await guest.setViewportSize({ width, height: 900 });
+        await expect.poll(() => guest.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    }
+    await guest.screenshot({ path: 'storage/app/phase07-showcase-mobile.png', fullPage: true });
+    await admin.goto('/intelligence?section=network&institution_id=' + fixtures.institution);
+    await expect(admin.locator('[data-chart-ready="true"]')).toHaveCount(2);
+    await student.goto(editUrl);
+    await decision(student, 'unpublished');
+    const revoked = await guest.goto(publicUrl);
+    expect(revoked.status()).toBe(404);
+    expect(errors).toEqual([]);
+    await Promise.all([studentContext.close(), adminContext.close(), guestContext.close()]);
+});
+test('network analytics renders accessible real-data charts in both themes and mobile layout', async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await login(page, 'system@browser.example.test');
+    await page.goto('/intelligence?section=network');
+    await expect(page.getByRole('heading', { name: 'Showcase publications over time', exact: true })).toBeVisible();
+    await expect(page.locator('[data-chart]')).toHaveCount(6);
+    await expect(page.locator('.analytics-empty')).toHaveCount(6);
+    await page.getByRole('button', { name: 'Switch to dark mode' }).click();
+    await expect(page.locator('.workspace')).toHaveAttribute('data-dashboard-theme', 'dark');
+    await page.screenshot({ path: 'storage/app/phase07-network-analytics-desktop.png', fullPage: true });
+    for (const width of [1440, 768, 390]) {
+        await page.setViewportSize({ width, height: 900 });
+        await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    }
+    expect(errors).toEqual([]);
+});
+test('event approval and registration reuse one opportunity with responsive branded fields', async ({ browser }) => {
+    test.setTimeout(180000);
+    const ownerContext = await browser.newContext(), reviewerContext = await browser.newContext(), studentContext = await browser.newContext();
+    const owner = await ownerContext.newPage(), reviewer = await reviewerContext.newPage(), student = await studentContext.newPage();
+    const errors = [];
+    for (const page of [owner, reviewer, student]) page.on('pageerror', error => errors.push(error.message));
+    await login(owner, 'admin@browser.example.test');
+    await owner.goto('/network/events/create');
+    await owner.getByLabel('Title', { exact: true }).fill('Browser controlled exhibition');
+    await owner.getByLabel('Description', { exact: true }).fill('An institution-approved event for registered members.');
+    await owner.getByLabel('Organiser', { exact: true }).fill('Browser Institution');
+    await owner.getByLabel('Venue', { exact: true }).fill('Innovation studio');
+    const start = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 16);
+    const end = new Date(Date.now() + 7 * 86400000 + 7200000).toISOString().slice(0, 16);
+    await owner.getByLabel('Starts in event timezone', { exact: true }).fill(start);
+    await owner.getByLabel('Ends in event timezone', { exact: true }).fill(end);
+    await owner.getByLabel('Registration requirements', { exact: true }).fill('Active institutional membership.');
+    await owner.getByLabel('Optional registration capacity', { exact: true }).fill('20');
+    await owner.getByLabel('I confirm this action').check();
+    await owner.getByRole('button', { name: 'Save event draft' }).click();
+    const eventUrl = owner.url();
+    await decision(owner, 'submitted');
+    await login(reviewer, 'reviewer@browser.example.test');
+    await reviewer.goto(eventUrl);
+    await decision(reviewer, 'approved');
+    await decision(reviewer, 'published');
+    await login(student, 'student@browser.example.test');
+    await student.goto(eventUrl);
+    const registration = student.locator('#registration');
+    await registration.getByLabel('I confirm this action').check();
+    await registration.getByRole('button', { name: 'Confirm event registration' }).click();
+    await expect(student.locator('#registration')).toContainText('Your status: registered');
+    await student.setViewportSize({ width: 390, height: 844 });
+    await expect.poll(() => student.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await expect.poll(() => student.locator('#app-sidebar').evaluate(el => el.getBoundingClientRect().right <= 0)).toBe(true);
+    await student.screenshot({ path: 'storage/app/phase07-event-mobile.png', fullPage: true });
+    expect(errors).toEqual([]);
+    await Promise.all([ownerContext.close(), reviewerContext.close(), studentContext.close()]);
+});
+

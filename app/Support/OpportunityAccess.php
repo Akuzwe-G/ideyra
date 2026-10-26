@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\InnovationChallenge;
 use App\Models\Membership;
 use App\Models\Opportunity;
 use App\Models\OpportunityApplication;
@@ -63,6 +64,7 @@ class OpportunityAccess
             $query->where(function ($published) use ($user, $members): void {
                 $published->whereIn('opportunities.status', ['published', 'closed'])->where(function ($access) use ($user, $members): void {
                     $access->where(fn ($platform) => $platform->whereNull('opportunities.institution_id')->where('visibility', 'platform'));
+                    $access->orWhereIn('opportunities.id', NetworkAccess::challenges($user, false)->select('opportunity_id'))->orWhereIn('opportunities.id', NetworkAccess::events($user, false)->select('opportunity_id'));
                     foreach ($members as $member) {
                         $ids = self::audienceIds($user, $member->institution_id);
                         $access->orWhere(function ($institution) use ($member, $ids): void {
@@ -111,7 +113,7 @@ class OpportunityAccess
         if (! $member || $member->role->name !== 'Student' || ! InnovationAccess::can($member->institution, 'opportunities.apply', $user) || ! self::visible($user, false)->whereKey($opportunity->id)->exists() || ! $opportunity->isOpen()) {
             return false;
         }
-        if ($opportunity->institution_id && $opportunity->institution_id !== $institutionId) {
+        if ($opportunity->institution_id && $opportunity->institution_id !== $institutionId && ! ($opportunity->network_type === 'challenge' && InnovationChallenge::where('opportunity_id', $opportunity->id)->where('allow_cross_institution', true)->whereIn('visibility', ['network', 'public'])->exists() && NetworkAccess::setting($institutionId)->allow_network && NetworkAccess::setting($opportunity->institution_id)->allow_network)) {
             return false;
         }
         $ids = self::audienceIds($user, $institutionId);
@@ -135,7 +137,7 @@ class OpportunityAccess
             });
             $ids = self::managed($user, 'opportunities.review_applications')->select('opportunities.id');
             $query->orWhere(fn ($managed) => $managed->whereIn('opportunity_id', $ids)->whereNotNull('submitted_at'));
-        })->when($user->status !== 'active', fn ($q) => $q->whereRaw('1=0'));
+        })->whereNull('collaboration_workspace_id')->when($user->status !== 'active', fn ($q) => $q->whereRaw('1=0'));
     }
 
     public static function reviews(OpportunityApplication $application, User $user): bool

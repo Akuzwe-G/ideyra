@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'version' => '2026-10-v1',
+    'version' => '2026-10-v2-network',
     'timezone' => 'Indian/Mauritius',
     'small_group' => 5,
     'retention_days' => 180,
@@ -19,8 +19,20 @@ return [
         'kpis' => 'KPI Performance Report',
         'ai' => 'AI Usage Report',
         'platform' => 'Platform Overview Report',
+        'network' => 'Innovation Network Report',
     ],
     'metrics' => [
+        'network_publications' => ['Published showcase projects', 'Publications', 'Approved non-private projections published in the period and currently published. Source private work is never copied into analytics.', 'network'],
+        'network_institutions' => ['Showcase institutions', 'Institutions', 'Distinct owning institutions among the selected published showcase projections.', 'network'],
+        'network_requests' => ['Collaboration requests received', 'Requests', 'Submitted collaboration requests received by the selected institution in the period; includes subsequent outcomes, excludes drafts.', 'network'],
+        'network_active_collaborations' => ['Active collaborations', 'Workspaces', 'Accepted collaboration workspaces created in the period whose current lifecycle is active. Requests are not collaborations.', 'network'],
+        'network_collaborations_initiated' => ['Collaborations initiated', 'Workspaces', 'Accepted active/closed workspaces created in the period with the requesting institution selected.', 'network'],
+        'network_challenges' => ['Challenges created', 'Challenges', 'Challenge specialisations created in the period by the selected institution. The underlying opportunity is not duplicated.', 'network'],
+        'network_submissions' => ['Challenge submissions received', 'Submissions', 'Current submitted entries with a real submission timestamp in the period for challenges hosted by the selected institution.', 'network'],
+        'network_challenge_participants' => ['Unique challenge participants', 'People', 'Distinct registered students in submitted challenge applications, using recorded institutional/programme attribution.', 'network'],
+        'network_events' => ['Events hosted', 'Events', 'Event records created in the period by the selected institution, including explicitly linked challenge events.', 'network'],
+        'network_event_participants' => ['Unique event participants', 'People', 'Distinct currently registered/attended identities with an event registration timestamp in the period; cancellations are excluded.', 'network'],
+        'network_recognitions' => ['Confirmed innovation recognitions', 'Recognitions', 'Explicit, currently confirmed organiser recognitions recorded in the period by the selected confirming institution. No automatic badges are inferred.', 'network'],
         'institutions' => ['Institutions', 'Count', 'Institutions created in the reporting period; current activation status is used.', 'overview'],
         'active_institutions' => ['Active institutions', 'Count', 'Institutions created in the period that are active now, not historical activation state.', 'overview'],
         'users' => ['Registered identities', 'People', 'Unique registered identities created in the period, restricted to current members when an institution is selected.', 'overview'],

@@ -18,6 +18,7 @@ class OpportunityApplicationWorkflow
 {
     public function save(Opportunity $opportunity, array $data, ?Application $application = null): Application
     {
+        abort_if($opportunity->network_type === 'event', 422, 'Use the event registration workflow to reserve an authorised place.');
         $user = auth()->user();
         Gate::authorize('view', $opportunity);
         abort_unless(OpportunityAccess::eligible($opportunity, $user, (int) $data['institution_id']), 403, 'You must be an eligible active student in the selected institution.');

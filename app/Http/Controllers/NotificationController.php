@@ -2,11 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CollaborationRequest;
+use App\Models\ContentReport;
 use App\Models\Institution;
 use App\Models\JoinApplication;
+use App\Models\NetworkPublication;
+use App\Models\NetworkRecognition;
 use App\Models\ReportRun;
 use App\Support\InnovationAccess;
 use App\Support\InstitutionAccess;
+use App\Support\ModerationWorkflow;
+use App\Support\NetworkAccess;
 use App\Support\OpportunityAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -42,6 +48,49 @@ class NotificationController extends Controller
     public function open(Request $request, string $notification): RedirectResponse
     {
         $data = $request->user()->notifications()->whereKey($notification)->firstOrFail()->data;
+        if (str_starts_with($data['target'] ?? '', 'network_')) {
+            $user = $request->user();
+            $id = $data['subject_id'] ?? 0;
+            $target = $data['target'];
+            if ($target === 'network_publication' && $publication = NetworkPublication::find($id)) {
+                if (NetworkAccess::publicationEdit($user, $publication)) {
+                    return redirect()->route('network.publications.edit', $publication);
+                }
+                if (NetworkAccess::publicationReview($user, $publication)) {
+                    return redirect()->route('network.publications.review', $publication);
+                }
+                if ($publication->consents()->where('user_id', $user->id)->exists() && in_array($user->id, NetworkAccess::contributors($publication->project), true)) {
+                    return redirect()->route('network.publications.consent', $publication);
+                }
+                if (NetworkAccess::publicationVisible($user, $publication)) {
+                    return redirect()->route('network.showcase.show', $publication->identifier);
+                }
+            }
+            if ($target === 'network_request' && $record = CollaborationRequest::find($id)) {
+                if (NetworkAccess::requestView($user, $record)) {
+                    return redirect()->route('network.requests.show', $record);
+                }
+            }
+            if ($target === 'network_workspace' && $record = NetworkAccess::workspaces($user, true)->whereKey($id)->first()) {
+                return redirect()->route('network.workspaces.show', $record);
+            }
+            if ($target === 'network_challenge' && $record = NetworkAccess::challenges($user)->whereKey($id)->first()) {
+                return redirect()->route('network.challenges.show', $record);
+            }
+            if ($target === 'network_event' && $record = NetworkAccess::events($user)->whereKey($id)->first()) {
+                return redirect()->route('network.events.show', $record);
+            }
+            if ($target === 'network_recognition' && NetworkRecognition::whereKey($id)->where('user_id', $user->id)->exists()) {
+                return redirect()->route('network.recognitions');
+            }
+            if ($target === 'network_moderation' && $record = ContentReport::find($id)) {
+                if (app(ModerationWorkflow::class)->canReview($user, $record)) {
+                    return redirect()->route('network.moderation');
+                }
+            }
+
+            return redirect()->route('notifications.index')->with('status', 'This innovation record is no longer available within your current access.');
+        }
         if (($data['target'] ?? null) === 'report') {
             $run = ReportRun::find($data['subject_id'] ?? 0);
             if ($run && Gate::allows('view', $run)) {

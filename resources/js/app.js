@@ -1,4 +1,65 @@
 const menuToggle = document.querySelector('[data-menu-toggle]');
+document.querySelectorAll('[data-remove-criterion]').forEach(button => button.addEventListener('click', () => button.closest('[data-criterion]').remove()));
+document.querySelectorAll('[data-network-add-criterion]').forEach(button => {
+    button.addEventListener('click', () => {
+        const index = Number(button.dataset.next);
+        if (button.parentElement.querySelectorAll('[data-criterion]').length >= 10) return;
+        const row = document.createElement('div');
+        row.className = 'network-criteria';
+        row.dataset.criterion = '';
+        for (const [key, text, type] of [['name', 'Criterion', 'text'], ['weight', 'Weight %', 'number']]) {
+            const label = document.createElement('label');
+            label.textContent = text;
+            const input = document.createElement('input');
+            input.type = type;
+            input.name = 'criteria[' + index + '][' + key + ']';
+            input.required = true;
+            if (key === 'name') input.maxLength = 100;
+            else { input.min = '0.01'; input.max = '100'; input.step = '0.01'; }
+            label.append(input);
+            row.append(label);
+        }
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'button button-secondary';
+        remove.textContent = 'Remove criterion';
+        remove.addEventListener('click', () => row.remove());
+        row.append(remove);
+        button.parentElement.querySelector('[data-criteria-rows]').append(row);
+        button.dataset.next = String(index + 1);
+        row.querySelector('input').focus();
+    });
+});
+document.querySelectorAll('[data-network-add-agenda]').forEach(button => {
+    button.addEventListener('click', () => {
+        const index = Number(button.dataset.next);
+        if (index >= 20) return;
+        const row = document.createElement('fieldset');
+        const legend = document.createElement('legend');
+        legend.textContent = 'Agenda session ' + (index + 1);
+        row.append(legend);
+        for (const [key, title, type] of [['title', 'Session title', 'text'], ['starts_at', 'Starts in event timezone', 'datetime-local'], ['ends_at', 'Ends in event timezone', 'datetime-local']]) {
+            const label = document.createElement('label');
+            label.textContent = title;
+            const input = document.createElement('input');
+            input.type = type;
+            input.name = 'agenda[' + index + '][' + key + ']';
+            input.required = true;
+            if (key === 'title') input.maxLength = 180;
+            label.append(input);
+            row.append(label);
+        }
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'button button-secondary';
+        remove.textContent = 'Remove session';
+        remove.addEventListener('click', () => row.remove());
+        row.append(remove);
+        button.parentElement.querySelector('[data-agenda-rows]').append(row);
+        button.dataset.next = String(index + 1);
+        row.querySelector('input').focus();
+    });
+});
 if (document.querySelector('[data-career-theme], [data-cv-preview], [data-cv-paper-viewport]')) import('./career.js');
 if (document.querySelector('[data-opportunity-editor], [data-group-application]')) import('./opportunities.js');
 if (document.querySelector('[data-app-shell]')) import('./workspace.js');

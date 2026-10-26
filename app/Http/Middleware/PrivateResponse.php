@@ -20,6 +20,9 @@ class PrivateResponse
         if ($request->is('intelligence', 'intelligence/*', 'reports', 'reports/*', 'ai', 'ai/*', 'career', 'career/*', 'v/*', 'dashboard', 'login', 'profile', 'profile/*', 'notifications', 'notifications/*', 'system', 'system/*', 'institutions/*', 'applications/*', 'activate/*', 'forgot-password', 'reset-password*', 'apply/*', 'preview/*')) {
             $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
         }
+        if ($request->is('network', 'network/*', 'showcase', 'showcase/*', 'challenges', 'challenges/*', 'events', 'events/*')) {
+            $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
+        }
         $response->headers->set('Referrer-Policy', 'no-referrer');
 
         return $response;

@@ -1,4 +1,5 @@
 <nav class="intelligence-tabs" aria-label="Intelligence sections">
+@if($context['platform'] ? \App\Support\NetworkAccess::platform(auth()->user(),'innovation-analytics.view_platform') : ($institution && \App\Support\NetworkAccess::can(auth()->user(),$institution,'innovation-analytics.view')))<a href="{{ route('intelligence.index',array_replace($filters,['section'=>'network'])) }}" @if(($filters['section']??'')==='network') aria-current="page" @endif>Innovation network</a>@endif
 @foreach(['overview'=>'Overview','projects'=>'Projects','participation'=>'Participation','programmes'=>'Programmes','opportunities'=>'Opportunities','career'=>'Career adoption','achievements'=>'Verified achievements','ai'=>'AI usage'] as $key=>$label)
 <a href="{{ route('intelligence.index',array_replace($filters,['section'=>$key])) }}" @if(($filters['section']??'')===$key) aria-current="page" @endif>{{ $label }}</a>
 @endforeach

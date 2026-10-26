@@ -143,7 +143,7 @@ class IntelligenceMetrics
         return compact('key', 'title', 'type', 'labels', 'values', 'note', 'unit', 'links', 'protected');
     }
 
-    private function timeline(string $key, string $title, Builder $query, array $filters, string $column, string $note, ?string $distinct = null): array
+    public function timeline(string $key, string $title, Builder $query, array $filters, string $column, string $note, ?string $distinct = null): array
     {
         $expr = $this->dateExpression($column, $filters['group']);
         $rows = (clone $query)->select([])->selectRaw($expr.' as bucket,COUNT('.($distinct ? 'DISTINCT '.$distinct : '*').') as total')->groupByRaw($expr)->get()->pluck('total', 'bucket');
@@ -161,7 +161,7 @@ class IntelligenceMetrics
         return $this->chart($key, $title, 'line', array_keys($values), array_values($values), $note, $distinct ? 'People' : 'Activities', [], (bool) $distinct);
     }
 
-    private function groups(string $key, string $title, Builder $query, string $column, string $note, string $type = 'bar', string $unit = 'Count', bool $people = false, ?string $distinct = null): array
+    public function groups(string $key, string $title, Builder $query, string $column, string $note, string $type = 'bar', string $unit = 'Count', bool $people = false, ?string $distinct = null): array
     {
         $rows = (clone $query)->select([])->selectRaw("COALESCE($column, 'Unassigned') as label,COUNT(".($distinct ? 'DISTINCT '.$distinct : '*').') as total')->groupBy($column)->orderByDesc('total')->limit(100)->get();
 
@@ -170,6 +170,9 @@ class IntelligenceMetrics
 
     public function data(array $context, array $filters, bool $comparison = true): array
     {
+        if ($filters['section'] === 'network') {
+            return app(NetworkAnalytics::class)->data($context, $filters, $this);
+        }
         $students = $this->students($context, $filters);
         $members = $this->students($context, $filters, false);
         $projects = $this->projects($context, $filters);
@@ -261,6 +264,9 @@ class IntelligenceMetrics
         $raw['ai_error_rate'] = $this->ratio($raw['ai_failures'], $raw['ai_requests']);
         $metrics = [];
         foreach (config('intelligence.metrics') as $key => [$label,$unit,$definition,$section]) {
+            if (! array_key_exists($key, $raw)) {
+                continue;
+            }
             $metrics[$key] = ['key' => $key, 'label' => $label, 'value' => $this->protect($raw[$key], $unit === 'People'), 'unit' => $unit, 'definition' => $definition, 'section' => $section];
         }
         $statuses = $this->groups('project-status', 'Project lifecycle', $createdProjects, 'p.status', 'Current status of institutional projects created in this period.', 'doughnut', 'Projects');

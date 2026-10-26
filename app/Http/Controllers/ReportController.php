@@ -108,6 +108,9 @@ class ReportController extends Controller
     public function schedule(ReportScheduleRequest $request): RedirectResponse
     {
         $filters = app(IntelligenceFilters::class)->normalise($request->user(), $request->validated());
+        if ($request->input('report_type') === 'network') {
+            $filters['section'] = 'network';
+        }
         $context = app(IntelligenceAccess::class)->context($request->user(), $filters, 'reports.schedule');
         app(IntelligenceAccess::class)->context($request->user(), $filters, 'reports.generate');
         app(IntelligenceAccess::class)->context($request->user(), $filters, 'analytics.export');

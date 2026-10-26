@@ -47,6 +47,9 @@ class IntelligenceAccess
         $platform = InstitutionAccess::system($user);
         if ($platform) {
             abort_unless(self::platform($user), 403);
+            if (($filters['section'] ?? null) === 'network') {
+                abort_unless(self::platform($user, 'innovation-analytics.view_platform'), 403);
+            }
             if ($permission !== 'analytics.view') {
                 abort_unless(self::platform($user, $permission.'_platform'), 403);
             }
@@ -58,6 +61,9 @@ class IntelligenceAccess
         }
         $institution = Institution::findOrFail($id);
         abort_unless(self::canEnter($user, $institution), 403);
+        if (($filters['section'] ?? null) === 'network') {
+            abort_unless(self::institution($user, $institution, 'innovation-analytics.view'), 403);
+        }
         if ($permission !== 'analytics.view') {
             abort_unless(self::institution($user, $institution, $permission), 403);
         }

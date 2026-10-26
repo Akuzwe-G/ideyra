@@ -7,6 +7,7 @@ use App\Models\Opportunity;
 use App\Models\OpportunityCategory;
 use App\Support\InnovationAccess;
 use App\Support\InstitutionAccess;
+use App\Support\NetworkAccess;
 use App\Support\OpportunityAccess;
 use App\Support\OpportunityWorkflow;
 use Illuminate\Http\RedirectResponse;
@@ -105,9 +106,15 @@ class OpportunityController extends Controller
         return redirect()->route('opportunities.show', $opportunity)->with('status', 'Opportunity updated.');
     }
 
-    public function show(Opportunity $opportunity): View
+    public function show(Opportunity $opportunity): View|RedirectResponse
     {
         Gate::authorize('view', $opportunity);
+        if ($opportunity->network_type === 'challenge') {
+            return redirect()->route('network.challenges.show', NetworkAccess::challenges(auth()->user())->where('opportunity_id', $opportunity->id)->firstOrFail());
+        }
+        if ($opportunity->network_type === 'event') {
+            return redirect()->route('network.events.show', NetworkAccess::events(auth()->user())->where('opportunity_id', $opportunity->id)->firstOrFail());
+        }
         $opportunity->load('category', 'institution', 'creator', 'managers');
         $questions = DB::table('opportunity_questions')->where('opportunity_id', $opportunity->id)->orderBy('sort_order')->get();
         $bookmarked = DB::table('opportunity_bookmarks')->where('opportunity_id', $opportunity->id)->where('user_id', auth()->id())->exists();

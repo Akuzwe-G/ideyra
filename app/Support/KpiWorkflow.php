@@ -146,6 +146,12 @@ class KpiWorkflow
             return $q->value('value');
         }
         $filters = app(IntelligenceFilters::class)->normalise($user, $overrideFilters ?? $kpi->filters);
+        if ((config('intelligence.metrics')[$kpi->metric][3] ?? null) === 'network') {
+            $filters['section'] = 'network';
+            if (! IntelligenceAccess::permits($user, $filters, 'analytics.view')) {
+                return null;
+            }
+        }
         $context = app(IntelligenceAccess::class)->context($user, $filters);
         $data = app(IntelligenceMetrics::class)->cached($context, $filters);
 
