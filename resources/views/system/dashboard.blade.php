@@ -1,6 +1,11 @@
 <x-layouts.admin title="System Administration">
-@if(\App\Support\IntelligenceAccess::platform(auth()->user()))<div class="button-row"><a class="button button-secondary" href="{{ route('intelligence.index') }}">Institutional intelligence & impact</a><a class="button button-secondary" href="{{ route('reports.index') }}">Report Centre</a></div>@endif
-<div class="page-toolbar"><div><h2>Your platform, at a glance</h2><p>A clear view of institution onboarding, application review and the people joining Ideyra.</p></div><div class="button-row"><a class="button button-secondary" href="{{ route('ai.activity',['scope'=>'system']) }}"><x-ui.icon name="sparkles" />AI analytics & quotas</a><a class="button button-secondary" href="{{ route('system.audit') }}"><x-ui.icon name="history" />Activity logs</a></div></div>
+<section class="system-dashboard-intro" aria-labelledby="platform-overview-title">
+<div class="page-toolbar"><div><h2 id="platform-overview-title">Your platform, at a glance</h2><p>A clear view of institution onboarding, application review and the people joining Ideyra.</p></div></div>
+<nav class="system-dashboard-actions" aria-label="Administration dashboard shortcuts">
+@if(\App\Support\IntelligenceAccess::platform(auth()->user()))<a class="button button-secondary" href="{{ route('intelligence.index') }}"><x-ui.icon name="chart-no-axes-combined" />Institutional intelligence & impact</a><a class="button button-secondary" href="{{ route('reports.index') }}"><x-ui.icon name="files" />Report Centre</a>@endif
+<a class="button button-secondary" href="{{ route('ai.activity',['scope'=>'system']) }}"><x-ui.icon name="sparkles" />AI analytics & quotas</a><a class="button button-secondary" href="{{ route('system.audit') }}"><x-ui.icon name="history" />Activity logs</a>
+</nav>
+</section>
 <p class="eyebrow">PLATFORM TOTALS · ALL TIME</p>
 <div class="overview-grid">
 @foreach($totals as $label => $count)

@@ -37,6 +37,20 @@ test('desktop shell collapses with real icons and persists one theme across page
         await expect(page.locator('.app-navigation .nav-item').first()).toContainText('Dashboard');
         await expect(page.locator('.app-navigation')).not.toContainText('Personal workspace');
         await expect(page.locator('.app-navigation')).not.toContainText('Idea Vault');
+        const spacing = await page.evaluate(() => {
+            const intro = document.querySelector('.system-dashboard-intro').getBoundingClientRect();
+            const totals = document.querySelector('.system-dashboard-intro + .eyebrow').getBoundingClientRect();
+            const description = document.querySelector('.system-dashboard-intro .page-toolbar').getBoundingClientRect();
+            const actions = [...document.querySelectorAll('.system-dashboard-actions a')].map(node => node.getBoundingClientRect());
+            return {
+                sectionGap: totals.top - intro.bottom,
+                headingGap: Math.min(...actions.map(rect => rect.top)) - description.bottom,
+                overlap: actions.some((rect, index) => actions.slice(index + 1).some(other => rect.left < other.right && rect.right > other.left && rect.top < other.bottom && rect.bottom > other.top)),
+            };
+        });
+        expect(spacing.sectionGap).toBeGreaterThanOrEqual(20);
+        expect(spacing.headingGap).toBeGreaterThanOrEqual(16);
+        expect(spacing.overlap).toBe(false);
         expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
         await page.screenshot({ path: 'storage/app/administration-dashboard-' + width + '.png', fullPage: false });
     }
